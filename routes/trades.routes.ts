@@ -9,15 +9,16 @@ const user = '63beffd81c1312d53375a43f';
 router.get("/", async (req: Request, res: Response) => {
 
 	try {
-		const { status, symbol } = req.query;
+		const { status, symbol, date } = req.query;
 
 		const searchQuery: any = { user };
 
 		if (status === "OPEN") searchQuery.sellPrice = { $exists: false };
 		if (status === "CLOSED") searchQuery.sellPrice = { $exists: true };
+		if (date) searchQuery.createdAt = { $gte: new Date(date as string) };
 		if (symbol) searchQuery.symbol = symbol;
 
-		const allTrades = await TradeModel.find(searchQuery).sort({ createdAt: -1 });
+		const allTrades = await TradeModel.find(searchQuery).sort({ updatedAt: -1 });
 		return res.status(200).send(allTrades);
 	} catch (error: any) {
 		handleInternalError(req, res, error)
