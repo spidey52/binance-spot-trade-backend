@@ -90,4 +90,4 @@ const autoTradeSync = async () => {
  });
 };
 
-export default tradeSync;
+export default autoTradeSync
