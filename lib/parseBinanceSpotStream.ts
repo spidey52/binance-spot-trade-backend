@@ -32,6 +32,7 @@ const parseBinanaceSpotStream = async (data: any) => {
      buyPrice: price,
      quantity,
      symbol,
+     user: "63beffd81c1312d53375a43f",
     });
    }
    if (side === "SELL") {
