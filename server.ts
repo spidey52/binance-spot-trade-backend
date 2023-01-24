@@ -25,12 +25,13 @@ mongoose
 	.then(() => { console.log("Connected to MongoDB"); })
 	.catch((err) => { console.log(err.message) });
 
-import { tickerRoutes, tradeRoutes, userRoutes } from "./routes";
+import { orderRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
 import tradeSync from './lib/trade.sync';
 
 app.use("/users", userRoutes);
 app.use("/trades", tradeRoutes);
 app.use('/tickers', tickerRoutes);
+app.use('/orders', orderRoutes);
 
 setInterval(tradeSync, 1000 * 60 * 5);
 

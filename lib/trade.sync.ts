@@ -1,6 +1,9 @@
+import axios from "axios";
 import ccxt from "ccxt";
 import TickerModel from "../models/ticker.models";
 import TradeModel from "../models/trades.models";
+import WebSocket from "ws";
+import parseBinanaceSpotStream from "./parseBinanceSpotStream";
 
 const exchange = new ccxt.binance({
  apiKey: process.env.API_KEY,
@@ -10,6 +13,15 @@ const exchange = new ccxt.binance({
 const getTrades = async (symbol: string) => {
  const trades = await exchange.fetchMyTrades(symbol);
  return trades;
+};
+
+export const getOrders = async () => {
+ const tickers = await TickerModel.find({});
+ const symbols = tickers.map((ticker) => ticker.symbol);
+ const orders = Promise.all(
+  symbols.map((symbol) => exchange.fetchOpenOrders(symbol))
+ );
+ return orders;
 };
 
 const tradeSync = async () => {
@@ -39,5 +51,45 @@ const tradeSync = async () => {
   }
  }
 };
+
+const autoTradeSync = async () => {
+ let listenerKey = "";
+ const getListenerkey = async () => {
+  try {
+   const { data } = await axios.post(
+    "https://api.binance.com/api/v3/userDataStream",
+    null,
+    {
+     headers: {
+      "X-MBX-APIKEY": process.env.API_KEY,
+     },
+    }
+   );
+   listenerKey = data.listenKey;
+  } catch (error: any) {
+   console.log(error.message);
+  }
+ };
+
+ await getListenerkey();
+
+ const ws = new WebSocket("wss://stream.binance.com:9443/ws/" + listenerKey);
+
+ ws.on("open", () => {
+  console.log("Binace WebSocket Connected");
+ });
+
+ ws.on("message", async (data) => {
+  const parsedData = JSON.parse(data.toString());
+  parseBinanaceSpotStream(parsedData);
+ });
+
+ ws.on("close", () => {
+  console.log("Binace WebSocket Disconnected");
+  autoTradeSync();
+ });
+};
+
+autoTradeSync();
 
 export default tradeSync;
