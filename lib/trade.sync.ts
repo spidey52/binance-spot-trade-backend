@@ -84,10 +84,15 @@ const autoTradeSync = async () => {
   parseBinanaceSpotStream(parsedData);
  });
 
+  const intervalId = setInterval(() => {
+   getListenerkey();
+ }, 1000 * 60 * 30);
+
  ws.on("close", () => {
   console.log("Binace WebSocket Disconnected");
+  clearInterval(intervalId);
   autoTradeSync();
  });
 };
 
-export default autoTradeSync
+export default autoTradeSync;
