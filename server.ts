@@ -33,8 +33,6 @@ app.use("/trades", tradeRoutes);
 app.use('/tickers', tickerRoutes);
 app.use('/orders', orderRoutes);
 
-setInterval(tradeSync, 1000 * 60 * 5);
-
 
 app.listen(9001, () => {
 	console.log("Server started on port 9001");
