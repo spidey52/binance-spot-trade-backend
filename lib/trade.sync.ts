@@ -85,7 +85,7 @@ const autoTradeSync = async () => {
  });
 
   const intervalId = setInterval(() => {
-   getListenerkey();
+    ws.close();
  }, 1000 * 60 * 30);
 
  ws.on("close", () => {
