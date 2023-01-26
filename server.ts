@@ -29,15 +29,24 @@ mongoose
   console.log(err.message);
  });
 
-import { orderRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
+import {
+ notificationRoutes,
+ orderRoutes,
+ reportRoutes,
+ tickerRoutes,
+ tradeRoutes,
+ userRoutes,
+} from "./routes";
 import autoTradeSync from "./lib/trade.sync";
 
-autoTradeSync();
+// autoTradeSync();
 
 app.use("/users", userRoutes);
 app.use("/trades", tradeRoutes);
 app.use("/tickers", tickerRoutes);
 app.use("/orders", orderRoutes);
+app.use("/reports", reportRoutes);
+app.use("/notifications", notificationRoutes);
 
 app.listen(9001, () => {
  console.log("Server started on port 9001");
