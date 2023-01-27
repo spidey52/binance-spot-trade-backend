@@ -1,3 +1,4 @@
+import { getSellPrice } from './utils/getPercent';
 import TickerModel from "../models/ticker.models";
 import TradeModel from "../models/trades.models";
 import exchange from "./exchange.conn";
