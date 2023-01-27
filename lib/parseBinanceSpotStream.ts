@@ -33,7 +33,11 @@ const parseBinanaceSpotStream = async (data: any) => {
      symbol,
      user: "63beffd81c1312d53375a43f",
     });
-    // await exchange.createLimitSellOrder(symbol, quantity, pr);
+    await exchange.createLimitSellOrder(
+     symbol,
+     quantity,
+     getSellPrice(price, 2)
+    );
    }
    if (side === "SELL") {
     // update trade
