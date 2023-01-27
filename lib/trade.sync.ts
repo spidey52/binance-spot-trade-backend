@@ -1,14 +1,11 @@
 import axios from "axios";
-import ccxt from "ccxt";
 import TickerModel from "../models/ticker.models";
 import TradeModel from "../models/trades.models";
 import WebSocket from "ws";
 import parseBinanaceSpotStream from "./parseBinanceSpotStream";
+import exchange from "./exchange.conn";
 
-const exchange = new ccxt.binance({
- apiKey: process.env.API_KEY,
- secret: process.env.API_SECRET,
-});
+
 
 const getTrades = async (symbol: string) => {
  const trades = await exchange.fetchMyTrades(symbol);
@@ -84,8 +81,8 @@ const autoTradeSync = async () => {
   parseBinanaceSpotStream(parsedData);
  });
 
-  const intervalId = setInterval(() => {
-    ws.close();
+ const intervalId = setInterval(() => {
+  ws.close();
  }, 1000 * 60 * 30);
 
  ws.on("close", () => {

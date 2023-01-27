@@ -1,4 +1,5 @@
 import TradeModel from "../models/trades.models";
+import exchange from "./exchange.conn";
 
 const findMinValueTrade = async (symbol: string, quantity: number) => {
  const trade = await TradeModel.findOne({
@@ -34,14 +35,19 @@ const parseBinanaceSpotStream = async (data: any) => {
      symbol,
      user: "63beffd81c1312d53375a43f",
     });
+    // await exchange.createLimitSellOrder(symbol, quantity, pr);
    }
    if (side === "SELL") {
     // update trade
     const trade = await findMinValueTrade(symbol, quantity);
     if (!trade) return;
-    await TradeModel.findByIdAndUpdate(trade._id, {
+    const updatedTrade = await TradeModel.findByIdAndUpdate(trade._id, {
      sellPrice: price,
     });
+
+    // create new order
+    if (!updatedTrade) return;
+    exchange.createLimitBuyOrder(symbol, quantity, updatedTrade?.buyPrice);
    }
   }
  }

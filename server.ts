@@ -1,4 +1,3 @@
-import { getTickersList } from "./redis/ticker.redis";
 import * as dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
@@ -40,6 +39,7 @@ import {
 import autoTradeSync from "./lib/trade.sync";
 
 autoTradeSync();
+
 
 app.use("/users", userRoutes);
 app.use("/trades", tradeRoutes);
