@@ -11,16 +11,6 @@ const findMinValueTrade = async (symbol: string, quantity: number) => {
  return trade;
 };
 
-async function test() {
- const g = await TickerModel.findByIdAndUpdate("63c02612a6f85b8e75530d73", {
-  symbol: "BTCUSDT",
-  price: 1000,
- });
- console.log(g);
-}
-
-test();
-
 const parseBinanaceSpotStream = async (data: any) => {
  console.log("Binance Spot Stream Data", new Date().toString());
 
