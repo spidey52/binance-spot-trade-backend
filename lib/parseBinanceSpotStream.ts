@@ -1,5 +1,9 @@
-import { getSellPrice } from './utils/getPercent';
-import TickerModel from "../models/ticker.models";
+import {
+ createBuyOrder,
+ getBuyOrderPercent,
+ getSellOrderPercent,
+} from "./utils/orders.utils";
+import { getBuyPrice, getSellPrice } from "./utils/getPercent";
 import TradeModel from "../models/trades.models";
 import exchange from "./exchange.conn";
 
@@ -34,11 +38,17 @@ const parseBinanaceSpotStream = async (data: any) => {
      symbol,
      user: "63beffd81c1312d53375a43f",
     });
+    const buyOrderPercent = await getBuyOrderPercent(symbol);
+    const sellOrderPercent = await getSellOrderPercent(symbol);
+
     await exchange.createLimitSellOrder(
      symbol,
      quantity,
-     getSellPrice(price, 2)
+     getSellPrice(price, sellOrderPercent)
     );
+
+    await createBuyOrder(symbol, quantity, getBuyPrice(price, buyOrderPercent));
+    return;
    }
    if (side === "SELL") {
     // update trade
