@@ -30,17 +30,21 @@ export const createBuyOrder = async (
  return order;
 };
 
-export const getBuyOrderPercent = async (symbol: string, sell?: boolean) => {
+export const getTickerDetails = async (symbol: string) => {
  const ticker = await TickerModel.findOne({ symbol });
- if (!ticker) return 2;
- if (sell === true) {
-  if (ticker.sellPercent) return ticker.sellPercent;
-  return 2;
+ if (!ticker) {
+  const newTicker = await TickerModel.create({
+   symbol,
+   buyPercent: 2,
+   sellPercent: 2,
+   loopEnabled: false,
+  });
+  return {
+   buyPercent: 2,
+   sellPercent: 2,
+   loopEnabled: false,
+  };
  }
- if (ticker.buyPercent) return ticker.buyPercent;
- return 2;
-};
-
-export const getSellOrderPercent = async (symbol: string) => {
- return getBuyOrderPercent(symbol, true);
+ const { buyPercent = 2, sellPercent = 2, loopEnabled = false } = ticker;
+ return { buyPercent, sellPercent, loopEnabled };
 };

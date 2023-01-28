@@ -1,10 +1,10 @@
 import { handleInternalError } from "./../error/error.handler";
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import TickerModel from "../models/ticker.models";
 
 const router = Router();
 
-router.get("/", async (req, res) => {
+router.get("/", async (req: Request, res: Response) => {
  try {
   const allTickers = await TickerModel.find();
   return res.status(200).send(allTickers);
@@ -18,6 +18,22 @@ router.post("/", async (req, res) => {
   const { ticker } = req.body;
   const newTicker = await TickerModel.create({ symbol: ticker });
   return res.status(201).send(newTicker);
+ } catch (error) {
+  handleInternalError(req, res, error);
+ }
+});
+
+router.patch("/:id", async (req: Request, res: Response) => {
+ try {
+  const { id } = req.params;
+
+  const { buyPercent, sellPercent, loopEnabled } = req.body;
+  const updatedTicker = await TickerModel.findByIdAndUpdate(
+   id,
+   { buyPercent, sellPercent, loopEnabled },
+   { new: true }
+  );
+  return res.status(200).send(updatedTicker);
  } catch (error) {
   handleInternalError(req, res, error);
  }

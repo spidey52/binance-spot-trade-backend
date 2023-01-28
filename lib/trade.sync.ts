@@ -5,8 +5,6 @@ import WebSocket from "ws";
 import parseBinanaceSpotStream from "./parseBinanceSpotStream";
 import exchange from "./exchange.conn";
 
-
-
 const getTrades = async (symbol: string) => {
  const trades = await exchange.fetchMyTrades(symbol);
  return trades;
@@ -15,11 +13,24 @@ const getTrades = async (symbol: string) => {
 export const getOrders = async () => {
  const tickers = await TickerModel.find({});
  const symbols = tickers.map((ticker) => ticker.symbol);
- const orders = Promise.all(
+ const orders = (await Promise.all(
   symbols.map((symbol) => exchange.fetchOpenOrders(symbol))
- );
+ )).flat().map((order) => order.info);
+
+
  return orders;
 };
+
+export const getOrdersBySymbol = async (symbol: string) => {
+ const orders = await exchange.fetchOpenOrders(symbol);
+ return orders;
+};
+
+export const cancelOrder = async (id: string, symbol: string) => {
+ const order = await exchange.cancelOrder(id, symbol);
+ return order;
+};
+
 
 const tradeSync = async () => {
  const tickers = await TickerModel.find({});
