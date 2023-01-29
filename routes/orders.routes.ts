@@ -6,7 +6,8 @@ const router = Router();
 
 router.get("/", async (req, res) => {
  try {
-   const allOrders = await getOrders();
+  const { symbol, side } = req.query;
+  const allOrders = await getOrders(symbol as string, side as string);
   return res.status(200).send(allOrders);
  } catch (error) {
   handleInternalError(req, res, error);
@@ -24,17 +25,15 @@ router.get("/:id/cancel", async (req: Request, res: Response) => {
  }
 });
 
-router.get("/:id", async (req: Request, res: Response) => { 
-  try {
-    const { id } = req.params;
-    const { symbol } = req.query;
-    const order = await getOrdersBySymbol(symbol as string);
-    return res.status(200).send(order);
-  } catch (error) {
-    handleInternalError(req, res, error);
-  }
+router.get("/:id", async (req: Request, res: Response) => {
+ try {
+  const { id } = req.params;
+  const { symbol } = req.query;
+  const order = await getOrdersBySymbol(symbol as string);
+  return res.status(200).send(order);
+ } catch (error) {
+  handleInternalError(req, res, error);
+ }
 });
-
-
 
 export default router;

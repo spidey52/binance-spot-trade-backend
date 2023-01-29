@@ -10,13 +10,28 @@ const getTrades = async (symbol: string) => {
  return trades;
 };
 
-export const getOrders = async () => {
+export const getOrders = async (symbol?: string, side?: string) => {
+ if (symbol) {
+  const orders = await exchange.fetchOrders(symbol);
+  if (side) {
+   return orders
+    .filter((order) => order.side === side)
+    .map((order) => order.info);
+  }
+  return orders;
+ }
+
  const tickers = await TickerModel.find({});
  const symbols = tickers.map((ticker) => ticker.symbol);
- const orders = (await Promise.all(
-  symbols.map((symbol) => exchange.fetchOpenOrders(symbol))
- )).flat().map((order) => order.info);
+ const orders = (
+  await Promise.all(symbols.map((symbol) => exchange.fetchOpenOrders(symbol)))
+ )
+  .flat()
+  .map((order) => order.info);
 
+ if (side) {
+  return orders.filter((order) => order.side === side);
+ }
 
  return orders;
 };
@@ -30,7 +45,6 @@ export const cancelOrder = async (id: string, symbol: string) => {
  const order = await exchange.cancelOrder(id, symbol);
  return order;
 };
-
 
 const tradeSync = async () => {
  const tickers = await TickerModel.find({});
@@ -84,7 +98,7 @@ const autoTradeSync = async () => {
  const ws = new WebSocket("wss://stream.binance.com:9443/ws/" + listenerKey);
 
  ws.on("open", () => {
-  console.log("Binace WebSocket Connected");
+  console.log("Binace WebSocket Connected", new Date().toLocaleString());
  });
 
  ws.on("message", async (data) => {
@@ -97,7 +111,7 @@ const autoTradeSync = async () => {
  }, 1000 * 60 * 30);
 
  ws.on("close", () => {
-  console.log("Binace WebSocket Disconnected");
+  console.log("Binace WebSocket Disconnected", new Date().toLocaleString());
   clearInterval(intervalId);
   autoTradeSync();
  });
