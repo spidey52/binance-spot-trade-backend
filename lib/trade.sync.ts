@@ -12,13 +12,13 @@ const getTrades = async (symbol: string) => {
 
 export const getOrders = async (symbol?: string, side?: string) => {
  if (symbol) {
-  const orders = await exchange.fetchOrders(symbol);
+  const orders = await exchange.fetchOpenOrders(symbol);
   if (side) {
    return orders
     .filter((order) => order.side === side)
     .map((order) => order.info);
   }
-  return orders;
+  return orders.map((order) => order.info);
  }
 
  const tickers = await TickerModel.find({});
