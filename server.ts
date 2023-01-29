@@ -38,7 +38,7 @@ import {
 } from "./routes";
 import autoTradeSync from "./lib/trade.sync";
 
-// autoTradeSync();
+autoTradeSync();
 
 
 app.use("/users", userRoutes);
