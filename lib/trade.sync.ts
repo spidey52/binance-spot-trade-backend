@@ -14,7 +14,7 @@ export const getOrders = async (symbol?: string, side?: string) => {
  if (symbol) {
   const orders = await exchange.fetchOpenOrders(symbol);
   if (side) {
-   return orders
+  return orders
     .filter((order) => order.side === side)
     .map((order) => order.info);
   }

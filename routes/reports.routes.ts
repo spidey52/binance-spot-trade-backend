@@ -24,7 +24,7 @@ const getDailyReports = async () => {
   {
    $group: {
     _id: {
-     updatedAt: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+     updatedAt: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt", timezone: "+05:30" } },
     },
     profit: {
      $sum: {

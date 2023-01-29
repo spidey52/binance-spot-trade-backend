@@ -14,11 +14,31 @@ router.get("/", async (req: Request, res: Response) => {
 
   if (status === "OPEN") searchQuery.sellPrice = { $exists: false };
   if (status === "CLOSED") searchQuery.sellPrice = { $exists: true };
-  if (date) searchQuery.updatedAt = { $gte: new Date(date as string) };
+  const filterDate = date ? new Date(date as string) : new Date();
+  filterDate.setHours(0, 0, 0, 0);
+  if (date) searchQuery.updatedAt = { $gte: filterDate };
   if (symbol) searchQuery.symbol = symbol;
 
   const allTrades = await TradeModel.find(searchQuery).sort({ updatedAt: -1 });
-  return res.status(200).send(allTrades);
+  const totalProfit = await TradeModel.aggregate([
+   {
+    $match: {
+     $sellPrice: { $exists: true },
+     updatedAt: { $gte: filterDate },
+    },
+   },
+   {
+    $group: {
+     _id: null,
+     sum: {
+      $sum: {
+       $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
+      },
+     },
+    },
+   },
+  ]);
+  return res.status(200).send({ allTrades, totalProfit });
  } catch (error: any) {
   handleInternalError(req, res, error);
  }
