@@ -23,7 +23,7 @@ router.get("/", async (req: Request, res: Response) => {
   const totalProfit = await TradeModel.aggregate([
    {
     $match: {
-     $sellPrice: { $exists: true },
+     sellPrice: { $exists: true },
      updatedAt: { $gte: filterDate },
     },
    },
