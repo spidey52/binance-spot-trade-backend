@@ -80,12 +80,12 @@ const parseBinanaceSpotStream = async (data: any) => {
      "New order starting",
      symbol,
      quantity,
-     updatedTrade?.buyPrice,
+     updatedTrade.buyPrice,
      "line number 63"
     );
     const isExists = await findPendingOrderByPrice(
      symbol,
-     updatedTrade?.buyPrice
+     updatedTrade.buyPrice
     );
     if (isExists) return;
     await exchange.createLimitBuyOrder(

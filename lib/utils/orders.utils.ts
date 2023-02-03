@@ -12,6 +12,8 @@ export const findPendingOrderByPrice = async (
   sellPrice: { $exists: false },
  });
 
+ if (order) return order;
+
  const orderOnExchange = await exchange.fetchOpenOrders(symbol);
  if (orderOnExchange.length > 0) {
   const order = orderOnExchange.find((o) => o.price === price);
