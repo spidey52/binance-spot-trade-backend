@@ -1,5 +1,6 @@
 import {
  createBuyOrder,
+ findPendingOrderByPrice,
  getTickerDetails,
 } from "./utils/orders.utils";
 import { getBuyPrice, getSellPrice } from "./utils/getPercent";
@@ -58,7 +59,6 @@ const parseBinanaceSpotStream = async (data: any) => {
     );
    }
    if (side === "SELL") {
-    // update trade
     const trade = await findMinValueTrade(symbol, quantity);
     if (!trade) return;
     const updatedTrade = await TradeModel.findByIdAndUpdate(trade._id, {
@@ -83,6 +83,11 @@ const parseBinanaceSpotStream = async (data: any) => {
      updatedTrade?.buyPrice,
      "line number 63"
     );
+    const isExists = await findPendingOrderByPrice(
+     symbol,
+     updatedTrade?.buyPrice
+    );
+    if (isExists) return;
     await exchange.createLimitBuyOrder(
      symbol,
      quantity,

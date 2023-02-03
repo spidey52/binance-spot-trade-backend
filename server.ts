@@ -38,8 +38,14 @@ import {
 } from "./routes";
 import autoTradeSync from "./lib/trade.sync";
 
-autoTradeSync();
-
+const env = process.env.NODE_ENV;
+if (!env) {
+ console.log("No environment found");
+ process.exit(1);
+}
+if (env === "production") {
+ autoTradeSync();
+}
 
 app.use("/users", userRoutes);
 app.use("/trades", tradeRoutes);
