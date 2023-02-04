@@ -1,22 +1,23 @@
+import { getBuyPrice } from "./getPercent";
 import TickerModel from "../../models/ticker.models";
 import TradeModel from "../../models/trades.models";
 import exchange from "../exchange.conn";
 
-export const findPendingOrderByPrice = async (
- symbol: string,
- price: number
-) => {
+export const findPendingOrderByPrice = async (symbol: string, price: number) => {
+ const { precision } = (await TickerModel.findOne({ symbol })) || { precision: 4 };
  const order = await TradeModel.findOne({
   symbol,
-  buyPrice: price,
+  buyPrice: Number(price.toFixed(precision)),
   sellPrice: { $exists: false },
  });
 
  if (order) return order;
 
  const orderOnExchange = await exchange.fetchOpenOrders(symbol);
+
  if (orderOnExchange.length > 0) {
-  const order = orderOnExchange.find((o) => o.price === price);
+  console.log("orderOnExchange", price.toFixed(precision), precision);
+  const order = orderOnExchange.find((o) => o.price.toFixed(precision) === price.toFixed(precision));
   console.log("order", order);
   return order;
  }
@@ -24,11 +25,7 @@ export const findPendingOrderByPrice = async (
  return order;
 };
 
-export const createBuyOrder = async (
- symbol: string,
- quantity: number,
- price: number
-) => {
+export const createBuyOrder = async (symbol: string, quantity: number, price: number) => {
  const isExists = await findPendingOrderByPrice(symbol, price);
  if (isExists) {
   console.log("Order already exists", symbol, price);
