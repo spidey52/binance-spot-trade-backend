@@ -1,4 +1,4 @@
-import { getBuyPrice } from "./getPercent";
+import { getBuyPrice, getPrecision } from "./getPercent";
 import TickerModel from "../../models/ticker.models";
 import TradeModel from "../../models/trades.models";
 import exchange from "../exchange.conn";
@@ -32,7 +32,8 @@ export const createBuyOrder = async (symbol: string, quantity: number, price: nu
   return;
  }
 
- const order = await exchange.createLimitBuyOrder(symbol, quantity, price);
+ const precision = await getPrecision(symbol);
+ const order = await exchange.createLimitBuyOrder(symbol, quantity, Number(price.toFixed(precision)));
  return order;
 };
 
