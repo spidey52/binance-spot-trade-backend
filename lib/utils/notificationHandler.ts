@@ -39,7 +39,7 @@ export const handleCustomNotification = async ({ title, body }: { title: string;
 
 export const handleBuyNotification = async ({ symbol, price }: BuyNotification) => {
  const title = "Buy Notification";
- const body = `Buy ${symbol} at ${price}`;
+ const body = `Buy ${symbol} at ${parseFloat(price.toString())}`;
  const data = await sendNotification(title, body);
  return data;
 };
@@ -52,7 +52,7 @@ type SellNotification = {
 
 export const handleSellNotification = async ({ symbol, price, profit }: SellNotification) => {
  const title = "Sell Notification";
- const body = `Sell ${symbol} at ${price} with ${profit} profit`;
+ const body = `Sell ${symbol} at ${parseFloat(price.toString())} with ${parseFloat(profit.toString())} profit`;
  const data = await sendNotification(title, body);
  return data;
 };
