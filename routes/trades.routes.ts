@@ -66,11 +66,7 @@ router.patch("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { sellPrice } = req.body;
   console.log(req.body);
-  const trade = await TradeModel.findByIdAndUpdate(
-   id,
-   { sellPrice },
-   { new: true }
-  );
+  const trade = await TradeModel.findByIdAndUpdate(id, { sellPrice }, { new: true });
   return res.status(200).send(trade);
  } catch (error) {
   handleInternalError(req, res, error);
@@ -81,11 +77,7 @@ router.get("/:id", async (req: Request, res: Response) => {
  try {
   const { id } = req.params;
   const { sellPrice } = req.body;
-  const trade = await TradeModel.findByIdAndUpdate(
-   id,
-   { sellPrice },
-   { new: true }
-  );
+  const trade = await TradeModel.findByIdAndUpdate(id, { sellPrice }, { new: true });
   return res.status(200).send(trade);
  } catch (error) {
   handleInternalError(req, res, error);

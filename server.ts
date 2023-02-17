@@ -1,3 +1,5 @@
+import { handleCustomNotification } from "./lib/utils/notificationHandler";
+import { handleInternalError } from "./error/error.handler";
 import * as dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
@@ -28,15 +30,9 @@ mongoose
   console.log(err.message);
  });
 
-import {
- notificationRoutes,
- orderRoutes,
- reportRoutes,
- tickerRoutes,
- tradeRoutes,
- userRoutes,
-} from "./routes";
+import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
 import autoTradeSync from "./lib/trade.sync";
+import redisClient, { setFcmToken } from "./redis/redis_conn";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -46,6 +42,22 @@ if (!env) {
 if (env === "production") {
  autoTradeSync();
 }
+
+redisClient.on("connect", () => {
+ console.log("Redis client connected");
+});
+
+app.post("/fcm", async (req, res) => {
+ const { token } = req.body;
+
+ try {
+  setFcmToken(token);
+  await handleCustomNotification({ title: "token saved", body: "your token is updated in database" });
+  return res.status(200).send({ message: "Token saved" });
+ } catch (error: any) {
+  return handleInternalError(req, res, error);
+ }
+});
 
 app.use("/users", userRoutes);
 app.use("/trades", tradeRoutes);

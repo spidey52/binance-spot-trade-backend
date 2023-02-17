@@ -40,6 +40,17 @@ const getDailyReports = async () => {
   },
  ]);
 
+ let totalProfit = 0;
+ let count = 0;
+ reports.map((report) => {
+  count++;
+  totalProfit += report.profit;
+  const avgProfit = totalProfit / count;
+  report.avgProfit = avgProfit;
+
+  return report;
+ });
+
  return reports;
 };
 
