@@ -11,12 +11,14 @@ const sendNotification = async (title: string, body: string) => {
   to: token,
  };
  try {
+  console.log("Sending notification", new Date().toLocaleString());
   const { data } = await axios.post("https://fcm.googleapis.com/fcm/send", message, {
    headers: {
     "Content-Type": "application/json",
     Authorization: "key=AAAAuO6zJ1c:APA91bHnt2wq0B3TNYJHDB8Rzual8tx83xToc8GNrUXoQ1jKGVq3b3OOGfc-Jvx1AraMB4bScdtDDUCiC8FmBme6_PgZuTeN25_sCjgjUsXE_etYDelcG5fTVU0k-JtZ3gm5CFQG7XyE",
    },
   });
+  console.log("Sending notification completed", new Date().toLocaleString());
 
   return data;
  } catch (error) {
