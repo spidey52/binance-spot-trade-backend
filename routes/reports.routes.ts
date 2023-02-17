@@ -47,6 +47,7 @@ const getDailyReports = async () => {
   totalProfit += report.profit;
   const avgProfit = totalProfit / count;
   report.avgProfit = avgProfit;
+  report.totalProfit = totalProfit;
 
   return report;
  });
