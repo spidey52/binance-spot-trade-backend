@@ -33,9 +33,9 @@ const parseBinanaceSpotStream = async (data: any) => {
 
     await exchange.createLimitSellOrder(symbol, quantity, getSellPrice(price, sellOrderPercent));
 
+    await handleBuyNotification({ symbol, price });
     if (loopEnabled === false) return;
     await createBuyOrder(symbol, quantity, getBuyPrice(price, buyOrderPercent));
-    await handleBuyNotification({ symbol, price });
     return;
    }
    if (side === "SELL") {
