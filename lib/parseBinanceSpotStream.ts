@@ -47,7 +47,13 @@ const parseBinanaceSpotStream = async (data: any) => {
    }
 
    if (executionType === "TRADE") {
-    await OrdersModel.findOneAndUpdate({ orderId }, { status: "TRADE", executedQty: { $inc: quantity } });
+    // await OrdersModel.findOneAndUpdate({ orderId }, { status: "TRADE", executedQty: { $inc: Number()} });
+    const order = await OrdersModel.findOne({ orderId });
+
+    if (order) {
+     order.executedQty = Number(order.executedQty) + Number(quantity);
+     await order.save();
+    }
    }
   } catch (error: any) {
    console.log("Error in parsing binance spot stream", error.message);
@@ -61,6 +67,7 @@ const parseBinanaceSpotStream = async (data: any) => {
      quantity,
      symbol,
      user: "63beffd81c1312d53375a43f",
+     buyTime: new Date().getTime(),
     });
 
     await exchange.createLimitSellOrder(symbol, quantity, getSellPrice(price, sellOrderPercent));
@@ -75,6 +82,7 @@ const parseBinanaceSpotStream = async (data: any) => {
     if (!trade) return;
     const updatedTrade = await TradeModel.findByIdAndUpdate(trade._id, {
      sellPrice: price,
+     sellTime: new Date().getTime(),
     });
 
     if (!updatedTrade) {

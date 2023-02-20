@@ -9,6 +9,8 @@ const tradeSchema = new Schema(
   binanceOrderId: { type: String },
   quantity: { type: Number, required: true },
   reorder: { type: Boolean, default: true },
+  buyTime: { type: Number },
+  sellTime: { type: Number },
  },
  {
   timestamps: true,
