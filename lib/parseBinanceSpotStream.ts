@@ -77,11 +77,11 @@ const parseBinanaceSpotStream = async (data: any) => {
      sellPrice: price,
     });
 
-    // create new order
     if (!updatedTrade) {
      console.log("No trade found", symbol, quantity, updatedTrade, "line number 59");
      return;
     }
+    if (updatedTrade.reorder === false) return;
     console.log("New order starting", symbol, quantity, updatedTrade.buyPrice, "line number 63");
     const isExists = await findPendingOrderByPrice(symbol, updatedTrade.buyPrice);
     if (isExists) return;

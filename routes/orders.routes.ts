@@ -7,10 +7,12 @@ const router = Router();
 
 router.get("/", async (req, res) => {
  try {
-  const { symbol, side } = req.query;
+  const { symbol, side, status } = req.query;
   const searchQuery: any = {};
   if (symbol) searchQuery.symbol = symbol;
   if (side) searchQuery.side = side;
+  if (status) searchQuery.status = status;
+  else searchQuery.status = "NEW";
 
   const orders = await OrdersModel.find(searchQuery);
 
