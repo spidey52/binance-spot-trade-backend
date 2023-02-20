@@ -51,6 +51,7 @@ const parseBinanaceSpotStream = async (data: any) => {
     const order = await OrdersModel.findOne({ orderId });
 
     if (order) {
+     order.status = "TRADE";
      order.executedQty = Number(order.executedQty) + Number(quantity);
      await order.save();
     }
@@ -105,7 +106,5 @@ const parseBinanaceSpotStream = async (data: any) => {
   }
  }
 };
-
-
 
 export default parseBinanaceSpotStream;
