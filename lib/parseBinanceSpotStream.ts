@@ -105,4 +105,7 @@ const parseBinanaceSpotStream = async (data: any) => {
   }
  }
 };
+
+
+
 export default parseBinanaceSpotStream;

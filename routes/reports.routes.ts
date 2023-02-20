@@ -21,10 +21,15 @@ const getDailyReports = async () => {
     sellPrice: { $exists: true },
    },
   },
+   {
+     $addFields: {
+        sellTime: { $toDate: "$sellTime" },
+    }
+  },
   {
    $group: {
     _id: {
-     updatedAt: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt", timezone: "+05:30" } },
+     updatedAt: { $dateToString: { format: "%Y-%m-%d", date: "$sellTime", timezone: "+05:30" } },
     },
     profit: {
      $sum: {

@@ -16,7 +16,7 @@ router.get("/", async (req: Request, res: Response) => {
   if (status === "CLOSED") searchQuery.sellPrice = { $exists: true };
   const filterDate = date ? new Date(date as string) : new Date();
   filterDate.setHours(0, 0, 0, 0);
-  if (date) searchQuery.updatedAt = { $gte: filterDate };
+  if (date) searchQuery.sellTime = { $gte: filterDate.getTime() };
   if (symbol) searchQuery.symbol = symbol;
 
   const allTrades = await TradeModel.find(searchQuery).sort({ updatedAt: -1 });
@@ -24,7 +24,7 @@ router.get("/", async (req: Request, res: Response) => {
    {
     $match: {
      sellPrice: { $exists: true },
-     updatedAt: { $gte: filterDate },
+     sellTime: { $gte: filterDate.getTime() },
     },
    },
    {
