@@ -33,6 +33,7 @@ mongoose
 import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
 import autoTradeSync from "./lib/trade.sync";
 import redisClient, { setFcmToken } from "./redis/redis_conn";
+import futureTradeStream from "./lib/future.stream";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -42,6 +43,8 @@ if (!env) {
 if (env === "production") {
  autoTradeSync();
 }
+
+futureTradeStream()
 
 redisClient.on("connect", () => {
  console.log("Redis client connected");
