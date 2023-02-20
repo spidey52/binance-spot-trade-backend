@@ -51,8 +51,7 @@ app.post("/fcm", async (req, res) => {
  const { token } = req.body;
 
  try {
-  setFcmToken(token);
-  await handleCustomNotification({ title: "token saved", body: "your token is updated in database" });
+  await setFcmToken(token);
   return res.status(200).send({ message: "Token saved" });
  } catch (error: any) {
   return handleInternalError(req, res, error);

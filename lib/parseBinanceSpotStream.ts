@@ -3,6 +3,7 @@ import { createBuyOrder, findPendingOrderByPrice, getTickerDetails } from "./uti
 import { getBuyPrice, getSellPrice } from "./utils/getPercent";
 import TradeModel from "../models/trades.models";
 import exchange from "./exchange.conn";
+import OrdersModel from "../models/orders.models";
 
 const findMinValueTrade = async (symbol: string, quantity: number) => {
  const trade = await TradeModel.findOne({
@@ -16,9 +17,40 @@ const findMinValueTrade = async (symbol: string, quantity: number) => {
 const parseBinanaceSpotStream = async (data: any) => {
  console.log("Binance Spot Stream Data", new Date().toString());
 
- const { e: eventType, S: side, s: symbol, p: price, q: quantity, x: executionType } = data;
+ const { e: eventType, S: side, s: symbol, p: price, q: quantity, x: executionType, i: orderId } = data;
 
  if (eventType === "executionReport") {
+  //  console.log(executionType);
+
+  try {
+   if (executionType === "NEW") {
+    await OrdersModel.create({
+     orderId,
+     symbol,
+     price,
+     quantity,
+     side,
+     status: "NEW",
+     user: "63beffd81c1312d53375a43f",
+     executedQty: 0,
+    });
+   }
+
+   if (executionType === "CANCELED") {
+    await OrdersModel.findOneAndUpdate({ orderId }, { status: "CANCELED" });
+   }
+
+   if (executionType === "REJECTED") {
+    await OrdersModel.findOneAndUpdate({ orderId }, { status: "REJECTED" });
+   }
+
+   if (executionType === "TRADE") {
+    await OrdersModel.findOneAndUpdate({ orderId }, { status: "TRADE", executedQty: { $inc: quantity } });
+   }
+  } catch (error: any) {
+   console.log("Error in parsing binance spot stream", error.message);
+  }
+
   if (executionType === "TRADE") {
    if (side === "BUY") {
     // create new trade
@@ -32,8 +64,8 @@ const parseBinanaceSpotStream = async (data: any) => {
     const { buyPercent: buyOrderPercent, sellPercent: sellOrderPercent, loopEnabled } = await getTickerDetails(symbol);
 
     await exchange.createLimitSellOrder(symbol, quantity, getSellPrice(price, sellOrderPercent));
-
     await handleBuyNotification({ symbol, price });
+
     if (loopEnabled === false) return;
     await createBuyOrder(symbol, quantity, getBuyPrice(price, buyOrderPercent));
     return;
