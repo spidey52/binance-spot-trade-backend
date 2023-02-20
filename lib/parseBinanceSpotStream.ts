@@ -4,6 +4,7 @@ import { getBuyPrice, getSellPrice } from "./utils/getPercent";
 import TradeModel from "../models/trades.models";
 import exchange from "./exchange.conn";
 import OrdersModel from "../models/orders.models";
+import TickerModel from "../models/ticker.models";
 
 const findMinValueTrade = async (symbol: string, quantity: number) => {
  const trade = await TradeModel.findOne({
@@ -21,13 +22,14 @@ const parseBinanaceSpotStream = async (data: any) => {
 
  if (eventType === "executionReport") {
   //  console.log(executionType);
+  const { buyPercent: buyOrderPercent, sellPercent: sellOrderPercent, loopEnabled, precision } = await getTickerDetails(symbol);
 
   try {
    if (executionType === "NEW") {
     await OrdersModel.create({
      orderId,
      symbol,
-     price,
+     price: Number(price).toFixed(precision),
      quantity,
      side,
      status: "NEW",
@@ -60,8 +62,6 @@ const parseBinanaceSpotStream = async (data: any) => {
      symbol,
      user: "63beffd81c1312d53375a43f",
     });
-
-    const { buyPercent: buyOrderPercent, sellPercent: sellOrderPercent, loopEnabled } = await getTickerDetails(symbol);
 
     await exchange.createLimitSellOrder(symbol, quantity, getSellPrice(price, sellOrderPercent));
     await handleBuyNotification({ symbol, price });
@@ -97,5 +97,4 @@ const parseBinanaceSpotStream = async (data: any) => {
   }
  }
 };
-
 export default parseBinanaceSpotStream;

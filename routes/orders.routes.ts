@@ -1,14 +1,20 @@
 import { getOrders, cancelOrder, getOrdersBySymbol } from "../lib/trade.sync";
 import { Request, Response, Router } from "express";
 import { handleInternalError } from "../error/error.handler";
+import OrdersModel from "../models/orders.models";
 
 const router = Router();
 
 router.get("/", async (req, res) => {
  try {
   const { symbol, side } = req.query;
-  const allOrders = await getOrders(symbol as string, side as string);
-  return res.status(200).send(allOrders);
+  const searchQuery: any = {};
+  if (symbol) searchQuery.symbol = symbol;
+  if (side) searchQuery.side = side;
+
+  const orders = await OrdersModel.find(searchQuery);
+
+  return res.status(200).send(orders);
  } catch (error) {
   handleInternalError(req, res, error);
  }

@@ -2,6 +2,7 @@ import { getBuyPrice, getPrecision } from "./getPercent";
 import TickerModel from "../../models/ticker.models";
 import TradeModel from "../../models/trades.models";
 import exchange from "../exchange.conn";
+import OrdersModel from "../../models/orders.models";
 
 export const findPendingOrderByPrice = async (symbol: string, price: number) => {
  const { precision } = (await TickerModel.findOne({ symbol })) || { precision: 4 };
@@ -13,14 +14,22 @@ export const findPendingOrderByPrice = async (symbol: string, price: number) => 
 
  if (order) return order;
 
- const orderOnExchange = await exchange.fetchOpenOrders(symbol);
+ const orderExists = await OrdersModel.findOne({
+  symbol,
+  price: Number(price.toFixed(precision)),
+  status: "NEW",
+ });
 
- if (orderOnExchange.length > 0) {
-  console.log("orderOnExchange", price.toFixed(precision), precision);
-  const order = orderOnExchange.find((o) => o.price.toFixed(precision) === price.toFixed(precision));
-  console.log("order", order);
-  return order;
- }
+ if (orderExists) return orderExists;
+
+ //  const orderOnExchange = await exchange.fetchOpenOrders(symbol);
+
+ //  if (orderOnExchange.length > 0) {
+ //   console.log("orderOnExchange", price.toFixed(precision), precision);
+ //   const order = orderOnExchange.find((o) => o.price.toFixed(precision) === price.toFixed(precision));
+ //   console.log("order", order);
+ //   return order;
+ //  }
 
  return order;
 };
@@ -45,13 +54,15 @@ export const getTickerDetails = async (symbol: string) => {
    buyPercent: 2,
    sellPercent: 2,
    loopEnabled: false,
+   precision: 4,
   });
   return {
    buyPercent: 2,
    sellPercent: 2,
    loopEnabled: false,
+   precision: 4,
   };
  }
- const { buyPercent = 2, sellPercent = 2, loopEnabled = false } = ticker;
- return { buyPercent, sellPercent, loopEnabled };
+ const { buyPercent = 2, sellPercent = 2, loopEnabled = false, precision } = ticker;
+ return { buyPercent, sellPercent, loopEnabled, precision };
 };
