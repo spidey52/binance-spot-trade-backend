@@ -1,3 +1,4 @@
+import { handleCustomNotification } from "./utils/notificationHandler";
 import axios from "axios";
 import WebSocket from "ws";
 import FutureTradeModel from "../models/future.trade.models";
@@ -35,6 +36,14 @@ const futureTradeStream = async () => {
 
    if (executionType === "TRADE") {
     const realizedProfit = Number(rp);
+    try {
+     await handleCustomNotification({
+      title: "New Future Trade",
+      body: `Symbol: ${symbol} | Side: ${side} | Price: ${price} | Quantity: ${quantity} | Realized Profit: ${realizedProfit}`,
+     });
+    } catch (error: any) {
+     console.log(error.message, "future trade stream");
+    }
     if (realizedProfit === 0) return;
 
     await FutureTradeModel.create({
