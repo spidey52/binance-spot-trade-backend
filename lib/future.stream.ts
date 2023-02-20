@@ -40,7 +40,7 @@ const futureTradeStream = async () => {
    const realizedProfit = Number(rp);
    await sendFutureTradeNotification({ symbol, price, quantity, side, realizedProfit, executionType });
    if (realizedProfit === 0) return;
-   if (executionType !== "FILLED") return;
+   if (executionType !== "TRADE") return;
 
    await FutureTradeModel.create({
     price,
@@ -69,7 +69,7 @@ const futureTradeStream = async () => {
 const sendFutureTradeNotification = async ({ symbol, price, quantity, side, realizedProfit, executionType }: any) => {
  try {
   await handleCustomNotification({
-   title: "New Future Trade"  + " " + executionType,
+   title: "New Future Trade" + " " + executionType,
    body: `Symbol: ${symbol} | Price: ${price} | Quantity: ${quantity} | Side: ${side} | Realized Profit: ${realizedProfit}`,
   });
  } catch (error: any) {
