@@ -46,7 +46,8 @@ router.post("/grid", async (req: Request, res: Response) => {
 
   while (i < count) {
    if (side === "SELL") {
-    const price = +(initialPrice * (1 + (percent / 100) * i)).toFixed(precision);
+    // const price = +(initialPrice * (1 + (percent / 100) * i)).toFixed(precision);
+    const price = +(initialPrice * (100 + i * percent)).toFixed(precision);
 
     try {
      await exchange.createLimitSellOrder(symbol, amount, price);
@@ -54,7 +55,7 @@ router.post("/grid", async (req: Request, res: Response) => {
      console.log(error.message);
     }
    } else {
-    const price = +(initialPrice * (1 - (percent / 100) * i)).toFixed(precision);
+    const price = +(initialPrice * (100 - i * percent)).toFixed(precision);
     try {
      await exchange.createLimitBuyOrder(symbol, amount, price);
     } catch (error: any) {
