@@ -42,9 +42,9 @@ if (!env) {
 }
 if (env === "production") {
  autoTradeSync();
+ futureTradeStream()
 }
 
-futureTradeStream()
 
 redisClient.on("connect", () => {
  console.log("Redis client connected");
