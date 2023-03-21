@@ -126,6 +126,11 @@ const deleteOpenOrder = (symbol: string, orderId: string) => {
   OPEN_ORDERS[symbol] = OPEN_ORDERS[symbol].filter((order) => order.orderId !== orderId);
  }
 };
+const findPendingOrder = (symbol: string, price: number) => {
+  if (OPEN_ORDERS[symbol]) {
+    return OPEN_ORDERS[symbol].find((order) => order.price === price);
+  }
+};
 
 const buyHandler = async (trade: any) => {
  try {
@@ -187,11 +192,12 @@ const sellHandler = async (trade: any) => {
    const ticker = await FutureTickerModel.findOne({ symbol });
    if (!ticker) return null;
    if (ticker.oomp) {
-    await futureExchange.createMarketBuyOrder(symbol, ticker.amount);
+    await futureExchange.createLimitBuyOrder(symbol, sellPrice, ticker.amount);
    }
+  } else {
+   const isExits = findPendingOrder(symbol, minValueTrade.buyPrice);
+   if (!isExits) await futureExchange.createLimitBuyOrder(symbol, quantity, minValueTrade.buyPrice);
   }
-
-  await futureExchange.createLimitBuyOrder(symbol, quantity, minValueTrade.buyPrice);
 
   const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
 
