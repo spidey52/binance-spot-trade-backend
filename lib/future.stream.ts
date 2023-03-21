@@ -127,9 +127,9 @@ const deleteOpenOrder = (symbol: string, orderId: string) => {
  }
 };
 const findPendingOrder = (symbol: string, price: number) => {
-  if (OPEN_ORDERS[symbol]) {
-    return OPEN_ORDERS[symbol].find((order) => order.price === price);
-  }
+ if (OPEN_ORDERS[symbol]) {
+  return OPEN_ORDERS[symbol].find((order) => order.price === price);
+ }
 };
 
 const buyHandler = async (trade: any) => {
@@ -153,7 +153,10 @@ const buyHandler = async (trade: any) => {
 
   if (ticker.rob) {
    const robPrice = buyPrice * ((100 - ticker.buyPercent) / 100);
-   await futureExchange.createLimitBuyOrder(symbol, quantity, robPrice);
+   const isExists = findPendingOrder(symbol, robPrice);
+   if (!isExists) {
+    await futureExchange.createLimitBuyOrder(symbol, quantity, robPrice);
+   }
   }
 
   await redisClient.publish(
