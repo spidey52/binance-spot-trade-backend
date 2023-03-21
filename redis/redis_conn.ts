@@ -2,6 +2,8 @@ import { Redis } from "ioredis";
 import exchange from "../lib/exchange.conn";
 
 const redisClient = new Redis();
+export const subscriberClient = redisClient.duplicate();
+
 
 
 export const getFcmToken = async () => {

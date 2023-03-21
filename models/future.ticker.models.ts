@@ -8,6 +8,8 @@ const tickerSchema = new Schema(
   sellPercent: { type: Number, required: true, default: 2 },
   rob: { type: Boolean, required: true, default: true, description: "reorder on buy" },
   ros: { type: Boolean, required: true, default: true, description: "reorder on sell" },
+  oomp: { type: Boolean, required: true, default: false },
+  amount: { type: Number, required: true },
   precision: { type: Number, required: true, default: 4 },
  },
  {
