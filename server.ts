@@ -42,7 +42,6 @@ if (!env) {
 }
 if (env === "production") {
  autoTradeSync();
- futureTradeStream()
 }
 
 
@@ -71,3 +70,5 @@ app.use("/notifications", notificationRoutes);
 app.listen(9001, () => {
  console.log("Server started on port 9001");
 });
+
+futureTradeStream()
