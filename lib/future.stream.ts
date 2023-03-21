@@ -128,7 +128,7 @@ const deleteOpenOrder = (symbol: string, orderId: string) => {
 };
 const findPendingOrder = (symbol: string, price: number) => {
  if (OPEN_ORDERS[symbol]) {
-  return OPEN_ORDERS[symbol].find((order) => order.price === price);
+  return OPEN_ORDERS[symbol].find((order) => order.price.toFixed(2) === price.toFixed(2));
  }
 };
 
