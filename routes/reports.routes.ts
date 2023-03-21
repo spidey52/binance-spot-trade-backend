@@ -2,6 +2,7 @@ import { handleInternalError } from "./../error/error.handler";
 import { OrderImmediatelyFillable } from "ccxt";
 import { Router } from "express";
 import TradeModel from "../models/trades.models";
+import FutureTradeModel from "../models/future.trade.models";
 
 const router = Router();
 
@@ -14,6 +15,11 @@ router.get("/", async (req, res) => {
  }
 });
 
+router.get("/future", async (req, res) => {
+ const reports = await getFutureTotalProfits();
+ return res.status(200).json(reports);
+});
+
 const getDailyReports = async () => {
  const reports = await TradeModel.aggregate([
   {
@@ -21,10 +27,10 @@ const getDailyReports = async () => {
     sellPrice: { $exists: true },
    },
   },
-   {
-     $addFields: {
-        sellTime: { $toDate: "$sellTime" },
-    }
+  {
+   $addFields: {
+    sellTime: { $toDate: "$sellTime" },
+   },
   },
   {
    $group: {
@@ -59,5 +65,28 @@ const getDailyReports = async () => {
 
  return reports;
 };
+
+const getFutureTotalProfits = async () => {
+ const reports = await FutureTradeModel.aggregate([
+  {
+   $match: {
+    sellPrice: { $exists: true },
+   },
+  },
+  {
+   $group: {
+    _id: null,
+    profit: {
+     $sum: {
+      $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
+     },
+    },
+   },
+  },
+ ]);
+ console.log(reports);
+};
+
+getFutureTotalProfits();
 
 export default router;
