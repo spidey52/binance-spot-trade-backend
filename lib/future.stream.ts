@@ -204,16 +204,20 @@ const sendFutureTradeNotification = async ({ symbol, price, quantity, side, real
 export default futureTradeStream;
 
 (async () => {
- const orders = await futureExchange.fetchOpenOrders("BTCBUSD");
+ const tickers = await FutureTickerModel.find();
 
- OPEN_ORDERS["BTCBUSD"] = orders.map((order: any) => {
-  return {
-   symbol: order.symbol,
-   orderId: order.id,
-   price: order.price,
-   side: order.side,
-  };
- });
+ for (let i = 0; i < tickers.length; i++) {
+  const orders = await futureExchange.fetchOpenOrders(tickers[i].symbol);
+
+  OPEN_ORDERS[tickers[i].symbol] = orders.map((order: any) => {
+   return {
+    symbol: order.symbol,
+    orderId: order.id,
+    price: order.price,
+    side: order.side,
+   };
+  });
+ }
 })();
 
 subscriberClient.subscribe("notification", (err, count) => {
