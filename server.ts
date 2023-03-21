@@ -43,6 +43,7 @@ if (!env) {
 }
 if (env === "production") {
  autoTradeSync();
+ futureTradeStream();
 }
 
 redisClient.on("connect", () => {
@@ -70,5 +71,3 @@ app.use("/notifications", notificationRoutes);
 app.listen(9001, () => {
  console.log("Server started on port 9001");
 });
-
-futureTradeStream()

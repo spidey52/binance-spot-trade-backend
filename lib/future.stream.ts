@@ -11,8 +11,8 @@ import TickerModel from "../models/ticker.models";
 import redisClient from "../redis/redis_conn";
 
 const futureExchange = new ccxt.binance({
- apiKey: process.env.API_KEY,
- secret: process.env.API_SECRET,
+ apiKey: process.env.FUTURE_API_KEY,
+ secret: process.env.FUTURE_API_SECRET,
  options: {
   defaultType: "future",
  },
@@ -34,7 +34,7 @@ const futureTradeStream = async () => {
   try {
    const { data } = await axios.post("https://fapi.binance.com/fapi/v1/listenKey", null, {
     headers: {
-     "X-MBX-APIKEY": process.env.API_KEY,
+     "X-MBX-APIKEY": process.env.FUTURE_API_KEY,
     },
    });
    listenerKey = data.listenKey;

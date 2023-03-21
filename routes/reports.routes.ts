@@ -1,5 +1,4 @@
 import { handleInternalError } from "./../error/error.handler";
-import { OrderImmediatelyFillable } from "ccxt";
 import { Router } from "express";
 import TradeModel from "../models/trades.models";
 import FutureTradeModel from "../models/future.trade.models";
@@ -67,6 +66,10 @@ const getDailyReports = async () => {
 };
 
 const getFutureTotalProfits = async () => {
+ const allTrades = await FutureTradeModel.find({
+  sellPrice: { $exists: true },
+ });
+ console.log(allTrades);
  const reports = await FutureTradeModel.aggregate([
   {
    $match: {
@@ -84,9 +87,8 @@ const getFutureTotalProfits = async () => {
    },
   },
  ]);
- console.log(reports);
+ return reports;
 };
 
-getFutureTotalProfits();
 
 export default router;
