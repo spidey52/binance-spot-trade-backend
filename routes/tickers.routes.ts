@@ -1,6 +1,7 @@
 import { handleInternalError } from "./../error/error.handler";
 import { Router, Request, Response } from "express";
 import TickerModel from "../models/ticker.models";
+import FutureTickerModel from "../models/future.ticker.models";
 
 const router = Router();
 
@@ -17,6 +18,16 @@ router.post("/", async (req, res) => {
  try {
   const { ticker } = req.body;
   const newTicker = await TickerModel.create({ symbol: ticker });
+  return res.status(201).send(newTicker);
+ } catch (error) {
+  handleInternalError(req, res, error);
+ }
+});
+
+router.post("/future", async (req, res) => {
+ try {
+  const body = req.body;
+  const newTicker = await FutureTickerModel.create(body);
   return res.status(201).send(newTicker);
  } catch (error) {
   handleInternalError(req, res, error);
