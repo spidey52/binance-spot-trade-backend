@@ -1,3 +1,4 @@
+import { addOpenOrder, deleteOpenOrder, findPendingOrder, OPEN_ORDERS } from "./utils/order.future";
 import { channel } from "diagnostics_channel";
 import { subscriberClient } from "./../redis/redis_conn";
 import { Response } from "express";
@@ -17,16 +18,6 @@ const futureExchange = new ccxt.binance({
   defaultType: "future",
  },
 });
-
-type order = {
- symbol: string;
- orderId: string;
- price: number;
- side: string;
-};
-export const OPEN_ORDERS: {
- [key: string]: order[];
-} = {};
 
 const futureTradeStream = async () => {
  let listenerKey = "";
@@ -109,30 +100,6 @@ const futureTradeStream = async () => {
   clearInterval(intervalId);
   futureTradeStream();
  });
-};
-
-const addOpenOrder = (symbol: string, orderId: string, price: number, side: string) => {
- let obj = {
-  symbol,
-  orderId,
-  price,
-  side,
- };
- if (OPEN_ORDERS[symbol]) OPEN_ORDERS[symbol].push(obj);
- else OPEN_ORDERS[symbol] = [obj];
-};
-const deleteOpenOrder = (symbol: string, orderId: string) => {
- if (OPEN_ORDERS[symbol]) {
-  OPEN_ORDERS[symbol] = OPEN_ORDERS[symbol].filter((order) => order.orderId !== orderId);
- }
-};
-const findPendingOrder = (symbol: string, price: number) => {
- if (OPEN_ORDERS[symbol]) {
-  return OPEN_ORDERS[symbol].find((order) => {
-   if (order.side.toLowerCase() === "buy" && order.price.toFixed(2) === price.toFixed(2)) return true;
-   return false;
-  });
- }
 };
 
 const buyHandler = async (trade: any) => {

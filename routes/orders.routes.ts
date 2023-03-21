@@ -1,3 +1,4 @@
+import { OPEN_ORDERS } from "./../lib/utils/order.future";
 import ccxt from "ccxt";
 import { getOrders, cancelOrder, getOrdersBySymbol } from "../lib/trade.sync";
 import { Request, Response, Router } from "express";
@@ -23,6 +24,9 @@ router.get("/", async (req, res) => {
  } catch (error) {
   handleInternalError(req, res, error);
  }
+});
+router.get("/future", async (req, res) => {
+ return res.send(OPEN_ORDERS);
 });
 
 router.post("/grid", async (req: Request, res: Response) => {
