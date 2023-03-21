@@ -8,15 +8,12 @@ import FutureTickerModel from "../models/future.ticker.models";
 import TickerModel from "../models/ticker.models";
 
 const futureExchange = new ccxt.binance({
- apiKey: process.env.NEW_API_KEY,
- secret: process.env.NEW_API_SECRET,
+ apiKey: process.env.API_KEY,
+ secret: process.env.API_SECRET,
  options: {
   defaultType: "future",
  },
 });
-
-console.log("Future Stream Started", process.env.NEW_API_KEY);
-console.log("Future Stream Started", process.env.NEW_API_SECRET);
 
 type order = {
  symbol: string;
@@ -34,7 +31,7 @@ const futureTradeStream = async () => {
   try {
    const { data } = await axios.post("https://fapi.binance.com/fapi/v1/listenKey", null, {
     headers: {
-     "X-MBX-APIKEY": process.env.NEW_API_KEY,
+     "X-MBX-APIKEY": process.env.API_KEY,
     },
    });
    listenerKey = data.listenKey;
