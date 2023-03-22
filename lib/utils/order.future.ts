@@ -26,7 +26,7 @@ export const deleteOpenOrder = (symbol: string, orderId: string) => {
 export const findPendingOrder = (symbol: string, price: number) => {
  if (OPEN_ORDERS[symbol]) {
   return OPEN_ORDERS[symbol].find((order) => {
-   if (order.side.toLowerCase() === "buy" && order.price.toFixed(2) === price.toFixed(2)) return true;
+   if (order.side.toLowerCase() === "buy" && Number(order.price).toFixed(2) === Number(price).toFixed(2)) return true;
    return false;
   });
  }
