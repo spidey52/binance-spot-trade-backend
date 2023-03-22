@@ -1,3 +1,14 @@
+import ccxt from "ccxt";
+import FutureTickerModel from "../../models/future.ticker.models";
+
+export const futureExchange = new ccxt.binance({
+ apiKey: process.env.FUTURE_API_KEY,
+ secret: process.env.FUTURE_API_SECRET,
+ options: {
+  defaultType: "future",
+ },
+});
+
 type order = {
  symbol: string;
  orderId: string;
@@ -28,6 +39,23 @@ export const findPendingOrder = (symbol: string, price: number) => {
   return OPEN_ORDERS[symbol].find((order) => {
    if (order.side.toLowerCase() === "buy" && Number(order.price).toFixed(2) === Number(price).toFixed(2)) return true;
    return false;
+  });
+ }
+};
+
+export const syncOpenOrder = async () => {
+ const tickers = await FutureTickerModel.find();
+
+ for (let i = 0; i < tickers.length; i++) {
+  const orders = await futureExchange.fetchOpenOrders(tickers[i].symbol);
+
+  OPEN_ORDERS[tickers[i].symbol] = orders.map((order: any) => {
+   return {
+    symbol: order.symbol,
+    orderId: order.id,
+    price: order.price,
+    side: order.side,
+   };
   });
  }
 };

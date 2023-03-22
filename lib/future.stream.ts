@@ -1,23 +1,11 @@
-import { addOpenOrder, deleteOpenOrder, findPendingOrder, OPEN_ORDERS } from "./utils/order.future";
-import { channel } from "diagnostics_channel";
+import { addOpenOrder, deleteOpenOrder, findPendingOrder, futureExchange, syncOpenOrder } from "./utils/order.future";
 import { subscriberClient } from "./../redis/redis_conn";
-import { Response } from "express";
-import ccxt from "ccxt";
 import { handleCustomNotification } from "./utils/notificationHandler";
 import axios from "axios";
 import WebSocket from "ws";
 import FutureTradeModel from "../models/future.trade.models";
 import FutureTickerModel from "../models/future.ticker.models";
-import TickerModel from "../models/ticker.models";
 import redisClient from "../redis/redis_conn";
-
-const futureExchange = new ccxt.binance({
- apiKey: process.env.FUTURE_API_KEY,
- secret: process.env.FUTURE_API_SECRET,
- options: {
-  defaultType: "future",
- },
-});
 
 const futureTradeStream = async () => {
  let listenerKey = "";
@@ -174,6 +162,8 @@ const sellHandler = async (trade: any) => {
 
   const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
 
+  await syncOpenOrder();
+
   await redisClient.publish(
    "notification",
    JSON.stringify({
@@ -202,23 +192,6 @@ const sendFutureTradeNotification = async ({ symbol, price, quantity, side, real
 };
 
 export default futureTradeStream;
-
-(async () => {
- const tickers = await FutureTickerModel.find();
-
- for (let i = 0; i < tickers.length; i++) {
-  const orders = await futureExchange.fetchOpenOrders(tickers[i].symbol);
-
-  OPEN_ORDERS[tickers[i].symbol] = orders.map((order: any) => {
-   return {
-    symbol: order.symbol,
-    orderId: order.id,
-    price: order.price,
-    side: order.side,
-   };
-  });
- }
-})();
 
 subscriberClient.subscribe("notification", (err, count) => {
  console.log("subscribe to notification");
