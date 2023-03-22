@@ -43,7 +43,7 @@ if (!env) {
 }
 if (env === "production") {
  autoTradeSync();
- futureTradeStream();
+//  futureTradeStream();
 }
 
 redisClient.on("connect", () => {
