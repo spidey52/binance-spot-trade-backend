@@ -70,13 +70,17 @@ const futureTradeStream = async () => {
 
     if (trade.x === "TRADE" && trade.X === "FILLED") {
      if (trade.S === "BUY") {
-      buyHandler(trade);
+      await buyHandler(trade);
      } else if (trade.S === "SELL") {
-      sellHandler(trade);
+      await sellHandler(trade);
      }
     }
    }
-  } catch (error: any) {}
+
+   await syncOpenOrder();
+  } catch (error: any) {
+   console.log(error.message);
+  }
  });
 
  const intervalId = setInterval(() => {
@@ -161,8 +165,6 @@ const sellHandler = async (trade: any) => {
   }
 
   const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
-
-  await syncOpenOrder();
 
   await redisClient.publish(
    "notification",

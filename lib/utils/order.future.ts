@@ -59,3 +59,5 @@ export const syncOpenOrder = async () => {
   });
  }
 };
+
+syncOpenOrder();
