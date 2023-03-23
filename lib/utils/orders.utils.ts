@@ -66,3 +66,21 @@ export const getTickerDetails = async (symbol: string) => {
  const { buyPercent = 2, sellPercent = 2, loopEnabled = false, precision } = ticker;
  return { buyPercent, sellPercent, loopEnabled, precision };
 };
+
+const pendingOrders = async () => {
+ const orders = await OrdersModel.find({ status: "NEW" });
+
+ for (const order of orders) {
+  // compare order status with exchange status
+
+  const orderId = order.orderId;
+
+  const exchangeOrder = await exchange.fetchOrder(orderId + "", order.symbol);
+  order.status = exchangeOrder.status;
+  await order.save();
+ }
+};
+
+setInterval(() => {
+ pendingOrders();
+}, 1000 * 60 * 3);
