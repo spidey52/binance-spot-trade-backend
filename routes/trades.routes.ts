@@ -8,7 +8,7 @@ const user = "63beffd81c1312d53375a43f";
 
 router.get("/", async (req: Request, res: Response) => {
  try {
-  const { status, symbol, date } = req.query;
+  const { status, symbol, date, page, limit } = req.query;
 
   const searchQuery: any = { user };
 
@@ -19,7 +19,11 @@ router.get("/", async (req: Request, res: Response) => {
   if (date) searchQuery.updatedAt = { $gte: filterDate };
   if (symbol) searchQuery.symbol = symbol;
 
-  const allTrades = await TradeModel.find(searchQuery).sort({ updatedAt: -1 });
+  const allTrades = await TradeModel.find(searchQuery)
+   .sort({ updatedAt: -1 })
+   .limit(limit ? Number(limit) : 10)
+   .skip(page ? Number(page) * Number(limit) : 0);
+
   const totalProfit = await TradeModel.aggregate([
    {
     $match: {
