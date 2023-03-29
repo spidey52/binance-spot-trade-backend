@@ -23,6 +23,8 @@ router.get("/", async (req: Request, res: Response) => {
    .sort({ updatedAt: -1 })
    .limit(limit ? Number(limit) : 10)
    .skip(page ? Number(page) * Number(limit) : 0);
+  
+  const count = await TradeModel.countDocuments(searchQuery);
 
   const totalProfit = await TradeModel.aggregate([
    {
@@ -42,7 +44,7 @@ router.get("/", async (req: Request, res: Response) => {
     },
    },
   ]);
-  return res.status(200).send({ allTrades, totalProfit });
+  return res.status(200).send({ allTrades, totalProfit, total: count });
  } catch (error: any) {
   handleInternalError(req, res, error);
  }
