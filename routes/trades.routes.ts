@@ -58,7 +58,7 @@ router.get("/profit", async (req: Request, res: Response) => {
    {
     $match: {
      sellPrice: { $exists: true },
-     sellTime: { $gte: date },
+     sellTime: { $gte: date.getTime() },
     },
    },
    {
@@ -69,6 +69,12 @@ router.get("/profit", async (req: Request, res: Response) => {
        $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
       },
      },
+    },
+   },
+   {
+    $project: {
+     _id: 0,
+     sum: 1,
     },
    },
   ]);
@@ -88,9 +94,15 @@ router.get("/profit", async (req: Request, res: Response) => {
      },
     },
    },
+   {
+    $project: {
+     _id: 0,
+     sum: 1,
+    },
+   },
   ]);
 
-  return res.status(200).send({ todayProfit, totalProfit });
+  return res.status(200).send({ todayProfit: todayProfit[0].sum, totalProfit: totalProfit[0].sum });
  } catch (error) {}
 });
 
