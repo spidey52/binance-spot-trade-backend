@@ -193,7 +193,7 @@ const sendFutureTradeNotification = async ({ symbol, price, quantity, side, real
  }
 };
 
-export default futureTradeStream;
+// export default futureTradeStream;
 
 subscriberClient.subscribe("notification", (err, count) => {
  console.log("subscribe to notification");

@@ -33,7 +33,7 @@ mongoose
 import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
 import autoTradeSync from "./lib/trade.sync";
 import redisClient, { setFcmToken, subscriberClient } from "./redis/redis_conn";
-import futureTradeStream from "./lib/future.stream";
+// import futureTradeStream from "./lib/future.stream";
 import { channel } from "diagnostics_channel";
 
 const env = process.env.NODE_ENV;

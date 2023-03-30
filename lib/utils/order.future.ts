@@ -60,4 +60,4 @@ export const syncOpenOrder = async () => {
  }
 };
 
-syncOpenOrder();
+// syncOpenOrder();
