@@ -122,9 +122,9 @@ const buyHandler = async (trade: any) => {
 
   sendFutureTradeNotification({
    symbol,
-   price: sellPrice,
+   price: buyPrice,
    quantity,
-   side: "SELL",
+   side: "BUY",
    realizedProfit: 0,
    executionType: "Filled",
   });
