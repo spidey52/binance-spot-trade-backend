@@ -35,6 +35,7 @@ import autoTradeSync from "./lib/trade.sync";
 import redisClient, { setFcmToken, subscriberClient } from "./redis/redis_conn";
 // import futureTradeStream from "./lib/future.stream";
 import { channel } from "diagnostics_channel";
+import futureTradeStream from "./lib/future.stream";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -43,7 +44,7 @@ if (!env) {
 }
 if (env === "production") {
  autoTradeSync();
-//  futureTradeStream();
+ futureTradeStream();
 }
 
 redisClient.on("connect", () => {

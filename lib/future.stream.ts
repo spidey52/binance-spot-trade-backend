@@ -204,4 +204,4 @@ const sendFutureTradeNotification = async ({ symbol, price, quantity, side, real
  }
 };
 
-// export default futureTradeStream;
+export default futureTradeStream;
