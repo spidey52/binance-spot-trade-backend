@@ -1,7 +1,7 @@
 import { handleInternalError } from "./../error/error.handler";
 import { Router } from "express";
 import TradeModel from "../models/trades.models";
-import FutureTradeModel from "../models/future.trade.models";
+import FutureTradeModel from "../models/future/future.trade.models";
 
 const router = Router();
 
@@ -89,6 +89,5 @@ const getFutureTotalProfits = async () => {
  ]);
  return reports;
 };
-
 
 export default router;

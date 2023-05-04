@@ -1,5 +1,5 @@
 import ccxt from "ccxt";
-import FutureTickerModel from "../../models/future.ticker.models";
+import FutureTickerModel from "../../models/future/future.ticker.models";
 
 export const futureExchange = new ccxt.binance({
  apiKey: process.env.FUTURE_API_KEY,

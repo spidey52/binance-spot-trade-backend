@@ -1,7 +1,7 @@
 import { handleInternalError } from "./../error/error.handler";
 import { Router, Request, Response } from "express";
 import TickerModel from "../models/ticker.models";
-import FutureTickerModel from "../models/future.ticker.models";
+import FutureTickerModel from "../models/future/future.ticker.models";
 
 const router = Router();
 

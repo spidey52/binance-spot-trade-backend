@@ -4,7 +4,7 @@ import { getOrders, cancelOrder, getOrdersBySymbol } from "../lib/trade.sync";
 import { Request, Response, Router } from "express";
 import { handleInternalError } from "../error/error.handler";
 import OrdersModel from "../models/orders.models";
-import FutureTradeModel from "../models/future.trade.models";
+import FutureTradeModel from "../models/future/future.trade.models";
 import TickerModel from "../models/ticker.models";
 
 const router = Router();
@@ -48,14 +48,12 @@ router.post("/grid", async (req: Request, res: Response) => {
   if (!ticker) return res.status(400).send({ message: "Ticker not found" });
   const { precision } = ticker;
 
-  
-
   while (i < count) {
    if (side === "SELL") {
     const price = +(initialPrice * (1 + (percent / 100) * i)).toFixed(precision);
 
     try {
-      console.log(price, amount, symbol);
+     console.log(price, amount, symbol);
      await exchange.createLimitSellOrder(symbol, amount, price);
     } catch (error: any) {
      console.log(error.message);
@@ -63,7 +61,7 @@ router.post("/grid", async (req: Request, res: Response) => {
    } else {
     const price = +(initialPrice * (1 - (percent / 100) * i)).toFixed(precision);
     try {
-      console.log(price, amount, symbol);
+     console.log(price, amount, symbol);
      await exchange.createLimitBuyOrder(symbol, amount, price);
     } catch (error: any) {
      console.log(error.message);

@@ -3,8 +3,8 @@ import { subscriberClient } from "./../redis/redis_conn";
 import { handleCustomNotification } from "./utils/notificationHandler";
 import axios from "axios";
 import WebSocket from "ws";
-import FutureTradeModel from "../models/future.trade.models";
-import FutureTickerModel from "../models/future.ticker.models";
+import FutureTradeModel from "../models/future/future.trade.models";
+import FutureTickerModel from "../models/future/future.ticker.models";
 import redisClient from "../redis/redis_conn";
 
 const futureTradeStream = async () => {
@@ -76,8 +76,6 @@ const futureTradeStream = async () => {
      }
     }
    }
-
-   await syncOpenOrder();
   } catch (error: any) {
    console.log(error.message);
   }
@@ -113,21 +111,23 @@ const buyHandler = async (trade: any) => {
   const sellPrice = buyPrice * ((100 + ticker.sellPercent) / 100);
   await futureExchange.createLimitSellOrder(symbol, quantity, sellPrice);
 
-  if (ticker.rob) {
-   const robPrice = buyPrice * ((100 - ticker.buyPercent) / 100);
-   const isExists = findPendingOrder(symbol, robPrice);
-   if (!isExists) {
-    await futureExchange.createLimitBuyOrder(symbol, quantity, robPrice);
-   }
-  }
+  //  TODO: no need to create limit buy order
+  // if (ticker.rob) {
+  //  const robPrice = buyPrice * ((100 - ticker.buyPercent) / 100);
+  //  const isExists = findPendingOrder(symbol, robPrice);
+  //  if (!isExists) {
+  //   await futureExchange.createLimitBuyOrder(symbol, quantity, robPrice);
+  //  }
+  // }
 
-  await redisClient.publish(
-   "notification",
-   JSON.stringify({
-    title: "Future Buy Order Filled",
-    body: `Symbol: ${symbol} | Price: ${buyPrice} | Quantity: ${quantity}`,
-   })
-  );
+  sendFutureTradeNotification({
+   symbol,
+   price: sellPrice,
+   quantity,
+   side: "SELL",
+   realizedProfit: 0,
+   executionType: "Filled",
+  });
  } catch (error: any) {
   console.log(error.message);
   console.log("Failed to create limit sell order");
@@ -139,6 +139,10 @@ const sellHandler = async (trade: any) => {
  try {
   console.log("Sell Handler", trade);
   const { i: orderId, s: symbol, q: quantity, p: sellPrice } = trade;
+
+  const isAlreadyExecuted = await FutureTradeModel.findOne({ orderId, sellPrice: { $exists: true } });
+  if (isAlreadyExecuted) return;
+
   const minValueTrade = await FutureTradeModel.findOne({
    symbol,
    sellPrice: { $exists: false },
@@ -149,30 +153,37 @@ const sellHandler = async (trade: any) => {
   await FutureTradeModel.findOneAndUpdate(minValueTrade._id, {
    sellPrice: sellPrice,
    sellTime: new Date(),
+   orderId,
   });
 
-  const isSellPositionExists = await FutureTradeModel.findOne({ symbol, sellPrice: { $exists: false } });
+  await futureExchange.createLimitBuyOrder(symbol, quantity, minValueTrade.buyPrice);
 
-  if (!isSellPositionExists) {
-   const ticker = await FutureTickerModel.findOne({ symbol });
-   if (!ticker) return null;
-   if (ticker.oomp) {
-    await futureExchange.createLimitBuyOrder(symbol, sellPrice, ticker.amount);
-   }
-  } else {
-   const isExits = findPendingOrder(symbol, minValueTrade.buyPrice);
-   if (!isExits) await futureExchange.createLimitBuyOrder(symbol, quantity, minValueTrade.buyPrice);
-  }
+  // TODO: not know what is this for
+  // const isSellPositionExists = await FutureTradeModel.findOne({ symbol, sellPrice: { $exists: false } });
+
+  // if (!isSellPositionExists) {
+  //  const ticker = await FutureTickerModel.findOne({ symbol });
+  //  if (!ticker) return null;
+  //  if (ticker.oomp) {
+  //   await futureExchange.createLimitBuyOrder(symbol, sellPrice, ticker.amount);
+  //  }
+  // } else {
+  //  const isExits = findPendingOrder(symbol, minValueTrade.buyPrice);
+  //  if (!isExits) await futureExchange.createLimitBuyOrder(symbol, quantity, minValueTrade.buyPrice);
+  // }
 
   const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
 
-  await redisClient.publish(
-   "notification",
-   JSON.stringify({
-    title: "Future Sell Order Filled",
-    body: `Symbol: ${symbol} | Price: ${sellPrice} | profit: ${profit}`,
-   })
-  );
+  try {
+   sendFutureTradeNotification({
+    symbol,
+    price: sellPrice,
+    quantity,
+    side: "SELL",
+    realizedProfit: profit,
+    executionType: "Filled",
+   });
+  } catch (error) {}
  } catch (error: any) {
   console.log(error.message);
   console.log("Failed to create limit buy order");
@@ -194,22 +205,3 @@ const sendFutureTradeNotification = async ({ symbol, price, quantity, side, real
 };
 
 // export default futureTradeStream;
-
-subscriberClient.subscribe("notification", (err, count) => {
- console.log("subscribe to notification");
-});
-
-subscriberClient.subscribe("sell_completed", (err, count) => {
- console.log("subscribe to sell completed");
-});
-
-subscriberClient.on("message", (channel, msg) => {
- if (channel === "notification") {
-  try {
-   const { title, body } = JSON.parse(msg);
-   handleCustomNotification({ title, body });
-  } catch (error) {
-   console.log("error in sending notification", "line number 240 future.stream.ts");
-  }
- }
-});
