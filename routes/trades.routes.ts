@@ -2,15 +2,16 @@ import { handleInternalError } from "./../error/error.handler";
 import { Router, Request, Response } from "express";
 import TradeModel from "../models/trades.models";
 import UserModel from "../models/users.models";
+import FutureTradeModel from "../models/future/future.trade.models";
 
 const router = Router();
 const user = "63beffd81c1312d53375a43f";
 
 router.get("/", async (req: Request, res: Response) => {
  try {
-  const { status, symbol, date, page, limit } = req.query;
+  const { status, symbol, date, page, limit, market } = req.query;
 
-  const searchQuery: any = { user };
+  const searchQuery: any = {};
 
   if (status === "OPEN") searchQuery.sellPrice = { $exists: false };
   if (status === "CLOSED") searchQuery.sellPrice = { $exists: true };
@@ -18,33 +19,12 @@ router.get("/", async (req: Request, res: Response) => {
   filterDate.setHours(0, 0, 0, 0);
   if (date) searchQuery.updatedAt = { $gte: filterDate };
   if (symbol) searchQuery.symbol = symbol;
+  const mypage = page ? parseInt(page as string) : 0;
+  const mylimit = limit ? parseInt(limit as string) : 10;
 
-  const allTrades = await TradeModel.find(searchQuery)
-   .sort({ updatedAt: -1 })
-   .limit(limit ? Number(limit) : 10)
-   .skip(page ? Number(page) * Number(limit) : 0);
+  const { allTrades, totalProfit, total } = await fetchTrades({ searchQuery, page: mypage, limit: mylimit, filterDate }, market ? market.toString() : "SPOT");
 
-  const count = await TradeModel.countDocuments(searchQuery);
-
-  const totalProfit = await TradeModel.aggregate([
-   {
-    $match: {
-     sellPrice: { $exists: true },
-     sellTime: { $gte: filterDate.getTime() },
-    },
-   },
-   {
-    $group: {
-     _id: null,
-     sum: {
-      $sum: {
-       $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
-      },
-     },
-    },
-   },
-  ]);
-  return res.status(200).send({ allTrades, totalProfit, total: count });
+  return res.status(200).send({ allTrades, totalProfit, total });
  } catch (error: any) {
   handleInternalError(req, res, error);
  }
@@ -157,3 +137,80 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 export default router;
+
+type TradeParams = {
+ searchQuery: any;
+ limit?: any;
+ page?: any;
+ filterDate: Date;
+};
+
+async function fetchTrades({ searchQuery, limit, page, filterDate }: TradeParams, model: string) {
+ if (model.toUpperCase() === "FUTURE") {
+  return fetchFutureTrades({ searchQuery, limit, page, filterDate });
+ } else {
+  return fetchSpotTrades({ searchQuery, limit, page, filterDate });
+ }
+}
+
+async function fetchFutureTrades({ searchQuery, limit, page, filterDate }: TradeParams) {
+ const allTrades = await FutureTradeModel.find(searchQuery)
+  .sort({ updatedAt: -1 })
+  .limit(limit ? Number(limit) : 10)
+  .skip(page ? Number(page) * Number(limit) : 0);
+
+ const count = await FutureTradeModel.countDocuments(searchQuery);
+
+ const totalProfit = await FutureTradeModel.aggregate([
+  {
+   $match: {
+    sellPrice: { $exists: true },
+    sellTime: { $gte: filterDate },
+   },
+  },
+  {
+   $group: {
+    _id: null,
+    sum: {
+     $sum: {
+      $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
+     },
+    },
+   },
+  },
+ ]);
+
+ return { allTrades, totalProfit, total: count };
+}
+
+async function fetchSpotTrades({ searchQuery, limit, page, filterDate }: TradeParams) {
+ const allTrades = await TradeModel.find(searchQuery)
+  .sort({ updatedAt: -1 })
+  .limit(limit ? Number(limit) : 10)
+  .skip(page ? Number(page) * Number(limit) : 0);
+
+ console.log(allTrades, "allTrades", searchQuery);
+
+ const count = await TradeModel.countDocuments(searchQuery);
+
+ const totalProfit = await TradeModel.aggregate([
+  {
+   $match: {
+    sellPrice: { $exists: true },
+    sellTime: { $gte: filterDate.getTime() },
+   },
+  },
+  {
+   $group: {
+    _id: null,
+    sum: {
+     $sum: {
+      $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
+     },
+    },
+   },
+  },
+ ]);
+
+ return { allTrades, totalProfit, total: count };
+}
