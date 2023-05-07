@@ -3,6 +3,7 @@ import { Router, Request, Response } from "express";
 import TradeModel from "../models/trades.models";
 import UserModel from "../models/users.models";
 import FutureTradeModel from "../models/future/future.trade.models";
+import mongoose, { Model, model } from "mongoose";
 
 const router = Router();
 const user = "63beffd81c1312d53375a43f";
@@ -31,14 +32,25 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 router.get("/profit", async (req: Request, res: Response) => {
+ const { market } = req.query;
+
  const date = new Date();
  date.setHours(0, 0, 0, 0);
+
+ let dbmodel = "Trade";
+ let sellTime: Date | number = date.getTime();
+ console.log(market);
+ if (market === "FUTURE") {
+  dbmodel = "FutureTrade";
+  sellTime = date;
+ }
+
  try {
-  const todayProfit = await TradeModel.aggregate([
+  const todayProfit = await model(dbmodel).aggregate([
    {
     $match: {
      sellPrice: { $exists: true },
-     sellTime: { $gte: date.getTime() },
+     sellTime: { $gte: sellTime },
     },
    },
    {
@@ -58,7 +70,7 @@ router.get("/profit", async (req: Request, res: Response) => {
     },
    },
   ]);
-  const totalProfit = await TradeModel.aggregate([
+  const totalProfit = await model(dbmodel).aggregate([
    {
     $match: {
      sellPrice: { $exists: true },
@@ -82,8 +94,10 @@ router.get("/profit", async (req: Request, res: Response) => {
    },
   ]);
 
-  return res.status(200).send({ todayProfit: todayProfit[0].sum, totalProfit: totalProfit[0].sum });
- } catch (error) {}
+  return res.status(200).send({ todayProfit: todayProfit[0]?.sum, totalProfit: totalProfit[0]?.sum });
+ } catch (error) {
+  handleInternalError(req, res, error);
+ }
 });
 
 router.post("/", (req: Request, res: Response) => {
