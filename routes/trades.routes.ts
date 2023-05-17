@@ -94,7 +94,7 @@ router.get("/profit", async (req: Request, res: Response) => {
    },
   ]);
 
-  return res.status(200).send({ todayProfit: todayProfit[0]?.sum, totalProfit: totalProfit[0]?.sum });
+  return res.status(200).send({ todayProfit: todayProfit[0]?.sum || 0, totalProfit: totalProfit[0]?.sum || 0 });
  } catch (error) {
   handleInternalError(req, res, error);
  }
@@ -228,3 +228,31 @@ async function fetchSpotTrades({ searchQuery, limit, page, filterDate }: TradePa
 
  return { allTrades, totalProfit, total: count };
 }
+
+const trade = {
+ user,
+ symbol: "BTCUSDT",
+ buyPrice: 48671,
+ buyTime: new Date(),
+ quantity: 0.044,
+};
+
+const trade2 = {
+ user,
+ symbol: "SOLUSDT",
+ buyPrice: 24.98,
+ buyTime: new Date(),
+ quantity: 26,
+};
+
+const run = async () => {
+ try {
+  const one = await FutureTradeModel.create(trade);
+  console.log(one);
+  const two = await FutureTradeModel.create(trade2);
+  console.log(two);
+ } catch (error: any) {
+   console.log(error.message);
+ }
+};
+
