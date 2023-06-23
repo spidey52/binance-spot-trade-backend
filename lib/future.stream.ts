@@ -5,7 +5,10 @@ import axios from "axios";
 import WebSocket from "ws";
 import FutureTradeModel from "../models/future/future.trade.models";
 import FutureTickerModel from "../models/future/future.ticker.models";
-import redisClient from "../redis/redis_conn";
+import AsyncQueue from "./utils/myqueue";
+
+const buyQueue = new AsyncQueue();
+const sellQueue = new AsyncQueue();
 
 const futureTradeStream = async () => {
  let listenerKey = "";
@@ -70,9 +73,15 @@ const futureTradeStream = async () => {
 
     if (trade.x === "TRADE" && trade.X === "FILLED") {
      if (trade.S === "BUY") {
-      await buyHandler(trade);
+      // await buyHandler(trade);
+      await buyQueue.enqueue(async () => {
+       await buyHandler(trade);
+      });
      } else if (trade.S === "SELL") {
-      await sellHandler(trade);
+      // await sellHandler(trade);
+      await sellQueue.enqueue(async () => {
+       await sellHandler(trade);
+      });
      }
     }
    }

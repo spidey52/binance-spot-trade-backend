@@ -16,6 +16,8 @@ const futureTradeSchema = new Schema(
 	}
 );
 
-const FutureTradeModel = model("FutureTrade", futureTradeSchema);
+
+
+const FutureTradeModel = model<typeof futureTradeSchema>("FutureTrade", futureTradeSchema);
 
 export default FutureTradeModel;
