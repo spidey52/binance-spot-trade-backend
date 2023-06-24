@@ -19,7 +19,7 @@ router.get("/", async (req: Request, res: Response) => {
   const filterDate = date ? new Date(date as string) : new Date();
   filterDate.setHours(0, 0, 0, 0);
   if (date) searchQuery.updatedAt = { $gte: filterDate };
-  if (symbol) searchQuery.symbol = symbol;
+  if (symbol) searchQuery.symbol = { $regex: symbol as string, $options: "i"}
   const mypage = page ? parseInt(page as string) : 0;
   const mylimit = limit ? parseInt(limit as string) : 10;
 
