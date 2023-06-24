@@ -157,7 +157,7 @@ const sellHandler = async (trade: any) => {
    sellPrice: { $exists: false },
   }).sort({ buyPrice: 1 });
 
-  if (!minValueTrade) return console.log("Trade not found");
+  if (!minValueTrade || !minValueTrade.buyPrice || !minValueTrade.quantity) return;
 
   await FutureTradeModel.findOneAndUpdate(minValueTrade._id, {
    sellPrice: sellPrice,
@@ -168,7 +168,11 @@ const sellHandler = async (trade: any) => {
   await futureExchange.createLimitBuyOrder(symbol, quantity, minValueTrade.buyPrice);
 
   // TODO: not know what is this for
-  // const isSellPositionExists = await FutureTradeModel.findOne({ symbol, sellPrice: { $exists: false } });
+  const isSellPositionExists = await FutureTradeModel.findOne({ symbol, sellPrice: { $exists: false } });
+
+  if (!isSellPositionExists) {
+    await futureExchange.createLimitBuyOrder(symbol, quantity, sellPrice);
+  }
 
   // if (!isSellPositionExists) {
   //  const ticker = await FutureTickerModel.findOne({ symbol });
