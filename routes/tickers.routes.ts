@@ -7,7 +7,14 @@ const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
  try {
+  const isFuture = req.query.future;
   const allTickers = await TickerModel.find();
+
+  if (isFuture) {
+   const allFutureTickers = await FutureTickerModel.find();
+   return res.status(200).send(allFutureTickers);
+  }
+
   return res.status(200).send(allTickers);
  } catch (error) {
   handleInternalError(req, res, error);
