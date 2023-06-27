@@ -36,6 +36,7 @@ import redisClient, { setFcmToken, subscriberClient } from "./redis/redis_conn";
 // import futureTradeStream from "./lib/future.stream";
 import { channel } from "diagnostics_channel";
 import futureTradeStream from "./lib/future.stream";
+import { futureProfitBySymbol } from "./routes/reports.routes";
 
 const env = process.env.NODE_ENV;
 if (!env) {

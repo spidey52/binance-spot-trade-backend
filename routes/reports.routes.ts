@@ -19,6 +19,15 @@ router.get("/future", async (req, res) => {
  return res.status(200).json(reports);
 });
 
+router.get("/future/symbol", async (req, res) => {
+ try {
+  const reports = await futureProfitBySymbol();
+  return res.status(200).json(reports);
+ } catch (error) {
+  return res.status(500).json(error);
+ }
+});
+
 const getDailyReports = async () => {
  const reports = await TradeModel.aggregate([
   {
@@ -79,6 +88,27 @@ const getFutureTotalProfits = async () => {
   {
    $group: {
     _id: null,
+    profit: {
+     $sum: {
+      $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
+     },
+    },
+   },
+  },
+ ]);
+ return reports;
+};
+
+export const futureProfitBySymbol = async () => {
+ const reports = await FutureTradeModel.aggregate([
+  {
+   $match: {
+    sellPrice: { $exists: true },
+   },
+  },
+  {
+   $group: {
+    _id: "$symbol",
     profit: {
      $sum: {
       $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
