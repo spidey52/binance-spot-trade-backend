@@ -1,8 +1,10 @@
 import axios from "axios";
 import { getFcmToken } from "../../redis/redis_conn";
+import sendFirebaseNotification from "../../firebase_init";
 
 const sendNotification = async (title: string, body: string) => {
  const token = await getFcmToken();
+ if (!token) return;
  const message = {
   notification: {
    title,
@@ -11,21 +13,15 @@ const sendNotification = async (title: string, body: string) => {
   to: token,
  };
  try {
-  console.log("Sending notification", new Date().toLocaleString());
-  const { data } = await axios.post("https://fcm.googleapis.com/fcm/send", message, {
-   headers: {
-    "Content-Type": "application/json",
-    Authorization: "key=AAAAuO6zJ1c:APA91bHnt2wq0B3TNYJHDB8Rzual8tx83xToc8GNrUXoQ1jKGVq3b3OOGfc-Jvx1AraMB4bScdtDDUCiC8FmBme6_PgZuTeN25_sCjgjUsXE_etYDelcG5fTVU0k-JtZ3gm5CFQG7XyE",
-   },
-  });
-  console.log("Sending notification completed", new Date().toLocaleString());
-
-  return data;
+  let token = "dc8uFLvqRpyFbLrdtjNHpk:APA91bFzUuONY8mLHGRyNzT0L5dN1sNdi63ycOUJyyKuna2ROIQ3mNBq5XkQx4XMT1LH8hfbTyWQEo05yTlAwzMi0QzWLkfnBKybtawXdLIiSL497XQE1xlKK1D8BpBUDA9R2zgTCfSV";
+  await sendFirebaseNotification([token], title, body, {});
  } catch (error) {
   console.log(error);
   return false;
  }
 };
+
+sendNotification("hello", "workd");
 
 type BuyNotification = {
  symbol: string;

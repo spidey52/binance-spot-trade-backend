@@ -37,6 +37,7 @@ import redisClient, { setFcmToken, subscriberClient } from "./redis/redis_conn";
 import { channel } from "diagnostics_channel";
 import futureTradeStream from "./lib/future.stream";
 import { futureProfitBySymbol } from "./routes/reports.routes";
+import sendNotification from "./firebase_init";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -73,3 +74,4 @@ app.use("/notifications", notificationRoutes);
 app.listen(9001, () => {
  console.log("Server started on port 9001");
 });
+

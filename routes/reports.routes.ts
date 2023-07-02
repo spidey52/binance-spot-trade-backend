@@ -2,6 +2,7 @@ import { handleInternalError } from "./../error/error.handler";
 import { Router } from "express";
 import TradeModel from "../models/trades.models";
 import FutureTradeModel from "../models/future/future.trade.models";
+import { futureExchange } from "../lib/utils/order.future";
 
 const router = Router();
 
@@ -172,3 +173,14 @@ export const futureProfitBySymbol = async () => {
 };
 
 export default router;
+
+const func = async () => {
+  let initialBalance = 30634;
+
+  while(initialBalance < 31500) {
+    initialBalance = initialBalance + initialBalance * (0.25 / 100)
+    console.log(initialBalance);
+  }
+
+};
+func();
