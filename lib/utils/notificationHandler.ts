@@ -13,7 +13,6 @@ const sendNotification = async (title: string, body: string) => {
   to: token,
  };
  try {
-  let token = "dc8uFLvqRpyFbLrdtjNHpk:APA91bFzUuONY8mLHGRyNzT0L5dN1sNdi63ycOUJyyKuna2ROIQ3mNBq5XkQx4XMT1LH8hfbTyWQEo05yTlAwzMi0QzWLkfnBKybtawXdLIiSL497XQE1xlKK1D8BpBUDA9R2zgTCfSV";
   await sendFirebaseNotification([token], title, body, {});
  } catch (error) {
   console.log(error);
