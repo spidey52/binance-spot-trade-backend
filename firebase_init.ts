@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { google } from "googleapis";
 import axios from "axios";
+import { JWT } from "google-auth-library";
 import redisClient from "./redis/redis_conn";
 
 dotenv.config();
@@ -27,7 +27,7 @@ async function getAccessToken() {
 
  return new Promise((resolve, reject) => {
   const key = require(servicefile);
-  const jwtClient = new google.auth.JWT(key.client_email, undefined, key.private_key, SCOPES, undefined);
+  const jwtClient = new JWT(key.client_email, undefined, key.private_key, SCOPES, undefined);
   jwtClient.authorize((err, tokens) => {
    if (err) {
     reject(err);
