@@ -21,6 +21,7 @@ if (!db) {
 }
 
 mongoose.set("strictQuery", true);
+
 mongoose
  .connect(db)
  .then(() => {
