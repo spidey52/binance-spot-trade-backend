@@ -71,6 +71,7 @@ app.use("/tickers", tickerRoutes);
 app.use("/orders", orderRoutes);
 app.use("/reports", reportRoutes);
 app.use("/notifications", notificationRoutes);
+const PORT=process.env.PORT || 9001
 
 app.listen(9001, () => {
  console.log("Server started on port 9001");
