@@ -1,4 +1,4 @@
-import { addOpenOrder, deleteOpenOrder, findPendingOrder, futureExchange, syncOpenOrder } from "./utils/order.future";
+import { addOpenOrder, deleteOpenOrder, findPendingOrder, futureExchange} from "./utils/order.future";
 import { subscriberClient } from "./../redis/redis_conn";
 import { handleCustomNotification } from "./utils/notificationHandler";
 import axios from "axios";
