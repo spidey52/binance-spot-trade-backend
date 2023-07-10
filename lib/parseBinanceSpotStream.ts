@@ -92,9 +92,9 @@ const parseBinanaceSpotStream = async (data: any) => {
     }
     if (updatedTrade.reorder === false) return;
     console.log("New order starting", symbol, quantity, updatedTrade.buyPrice, "line number 63");
-    const isExists = await findPendingOrderByPrice(symbol, updatedTrade.buyPrice);
+    const isExists = await findPendingOrderByPrice(symbol, updatedTrade.buyPrice || price);
     if (isExists) return;
-    await exchange.createLimitBuyOrder(symbol, quantity, updatedTrade?.buyPrice);
+    await exchange.createLimitBuyOrder(symbol, quantity, updatedTrade?.buyPrice || price);
     console.log("New order created", symbol, quantity, updatedTrade?.buyPrice, "line number 65");
     const profit = (price - (updatedTrade?.buyPrice || price)) * quantity;
     await handleSellNotification({
