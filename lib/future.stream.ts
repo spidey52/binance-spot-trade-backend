@@ -153,7 +153,7 @@ const sellHandler = async (trade: any) => {
   if (isAlreadyExecuted) return;
 
   const minValueTrade = await FutureTradeModel.findOne({
-   quantity: { $lte: quantity },
+   quantity: quantity,
    symbol,
    sellPrice: { $exists: false },
   }).sort({ buyPrice: 1 });
