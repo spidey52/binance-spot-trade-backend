@@ -1,4 +1,4 @@
-import { addOpenOrder, deleteOpenOrder, findPendingOrder, futureExchange} from "./utils/order.future";
+import { addOpenOrder, deleteOpenOrder, findPendingOrder, futureExchange } from "./utils/order.future";
 import { subscriberClient } from "./../redis/redis_conn";
 import { handleCustomNotification } from "./utils/notificationHandler";
 import axios from "axios";
@@ -153,6 +153,7 @@ const sellHandler = async (trade: any) => {
   if (isAlreadyExecuted) return;
 
   const minValueTrade = await FutureTradeModel.findOne({
+   quantity: { $lte: quantity },
    symbol,
    sellPrice: { $exists: false },
   }).sort({ buyPrice: 1 });
@@ -171,7 +172,7 @@ const sellHandler = async (trade: any) => {
   const isSellPositionExists = await FutureTradeModel.findOne({ symbol, sellPrice: { $exists: false } });
 
   if (!isSellPositionExists) {
-    await futureExchange.createLimitBuyOrder(symbol, quantity, sellPrice);
+   await futureExchange.createLimitBuyOrder(symbol, quantity, sellPrice);
   }
 
   // if (!isSellPositionExists) {
