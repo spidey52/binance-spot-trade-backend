@@ -7,6 +7,7 @@ import FutureTradeModel from "../models/future/future.trade.models";
 import TickerModel from "../models/ticker.models";
 import TradeModel from "../models/trades.models";
 import { futureExchange } from "../lib/utils/order.future";
+import FutureTickerModel from "../models/future/future.ticker.models";
 
 const router = Router();
 
@@ -30,7 +31,7 @@ router.get("/", async (req, res) => {
 router.get("/future", async (req, res) => {
  const { symbol } = req.query;
  try {
-  const ticker = await TickerModel.findOne({
+  const ticker = await FutureTickerModel.findOne({
    symbol: {
     $regex: symbol || "",
     $options: "i",
@@ -64,6 +65,19 @@ router.get("/future", async (req, res) => {
    }, initialState);
 
   return res.status(200).send(response);
+ } catch (error) {
+  return handleInternalError(req, res, error);
+ }
+});
+
+router.post("/future/place", async (req, res) => {
+ try {
+  const { symbol, side, price, amount } = req.body;
+
+  if (!symbol || !side || !price || !amount) return res.status(400).send({ message: "Missing required fields" });
+
+  const order = await futureExchange.createLimitOrder(symbol, side, amount, price);
+  return res.status(200).send({ message: "order placed succesfully" });
  } catch (error) {
   return handleInternalError(req, res, error);
  }
