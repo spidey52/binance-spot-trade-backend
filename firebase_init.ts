@@ -21,7 +21,7 @@ async function getAccessToken() {
  const token = await redisClient.get("firebase_token");
 
  if (token) {
-  console.log("token from redis", token);
+  console.log("token from redis");
   return token;
  }
 

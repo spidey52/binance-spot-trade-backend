@@ -1,4 +1,3 @@
-import { OPEN_ORDERS } from "./../lib/utils/order.future";
 import ccxt from "ccxt";
 import { getOrders, cancelOrder, getOrdersBySymbol } from "../lib/trade.sync";
 import { Request, Response, Router } from "express";
@@ -6,6 +5,8 @@ import { handleInternalError } from "../error/error.handler";
 import OrdersModel from "../models/orders.models";
 import FutureTradeModel from "../models/future/future.trade.models";
 import TickerModel from "../models/ticker.models";
+import TradeModel from "../models/trades.models";
+import { futureExchange } from "../lib/utils/order.future";
 
 const router = Router();
 
@@ -25,8 +26,61 @@ router.get("/", async (req, res) => {
   handleInternalError(req, res, error);
  }
 });
+
 router.get("/future", async (req, res) => {
- return res.send(OPEN_ORDERS);
+ const { symbol } = req.query;
+ try {
+  const ticker = await TickerModel.findOne({
+   symbol: {
+    $regex: symbol || "",
+    $options: "i",
+   },
+  });
+
+  if (!ticker) return res.status(400).send({ message: "Ticker not found" });
+
+  const orders = await futureExchange.fetchOpenOrders(ticker.symbol);
+
+  const initialState: { buy: any[]; sell: any[] } = {
+   buy: [],
+   sell: [],
+  };
+
+  const response = orders
+   .map((o) => ({
+    id: o.id,
+    symbol: o.info.symbol,
+    orderId: o.info.orderId,
+    clientId: o.info.clientOrderId,
+    side: o.side,
+    price: o.price,
+    amount: o.amount,
+   }))
+   .sort((a, b) => a.price - b.price)
+   .reduce((acc, cur) => {
+    if (cur.side === "buy") acc.buy.push(cur);
+    else acc.sell.push(cur);
+    return acc;
+   }, initialState);
+
+  return res.status(200).send(response);
+ } catch (error) {
+  return handleInternalError(req, res, error);
+ }
+});
+
+router.post("/future/cancel", async (req, res) => {
+ try {
+  const { ids, symbol } = req.body;
+  if (!symbol) return res.status(400).send({ message: "Missing required fields symbol" });
+
+  for (let id of ids) {
+   await futureExchange.cancelOrder(id, symbol as string);
+  }
+  return res.status(200).send({ message: "order cancelled succesfully" });
+ } catch (error) {
+  return handleInternalError(req, res, error);
+ }
 });
 
 router.post("/grid", async (req: Request, res: Response) => {
@@ -100,18 +154,3 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 export default router;
-
-async () => {
- const futureOrders = await FutureTradeModel.aggregate([
-  {
-   $group: {
-    _id: "$symbol",
-    total: { $sum: "$quantity" },
-    buy: { $sum: { $cond: [{ $eq: ["$side", "buy"] }, "$quantity", 0] } },
-    sell: { $sum: { $cond: [{ $eq: ["$side", "sell"] }, "$quantity", 0] } },
-   },
-  },
- ]);
-
- console.log(futureOrders);
-};

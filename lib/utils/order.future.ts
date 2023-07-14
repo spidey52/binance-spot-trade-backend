@@ -1,5 +1,5 @@
 import ccxt from "ccxt";
-import FutureTickerModel from "../../models/future/future.ticker.models";
+import 'dotenv/config';
 
 export const futureExchange = new ccxt.binance({
  apiKey: process.env.FUTURE_API_KEY,
@@ -8,6 +8,8 @@ export const futureExchange = new ccxt.binance({
   defaultType: "future",
  },
 });
+
+console.log("futureExchange", futureExchange.apiKey, futureExchange.secret);
 
 type order = {
  symbol: string;

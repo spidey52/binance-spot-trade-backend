@@ -20,7 +20,6 @@ const sendNotification = async (title: string, body: string) => {
  }
 };
 
-sendNotification("hello", "workd");
 
 type BuyNotification = {
  symbol: string;

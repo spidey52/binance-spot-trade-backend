@@ -1,4 +1,3 @@
-import { handleCustomNotification } from "./lib/utils/notificationHandler";
 import { handleInternalError } from "./error/error.handler";
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -35,10 +34,8 @@ import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoute
 import autoTradeSync from "./lib/trade.sync";
 import redisClient, { setFcmToken, subscriberClient } from "./redis/redis_conn";
 // import futureTradeStream from "./lib/future.stream";
-import { channel } from "diagnostics_channel";
 import futureTradeStream from "./lib/future.stream";
-import { futureProfitBySymbol } from "./routes/reports.routes";
-import sendNotification from "./firebase_init";
+import binanceRouter from "./routes/binance.routes";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -71,9 +68,10 @@ app.use("/tickers", tickerRoutes);
 app.use("/orders", orderRoutes);
 app.use("/reports", reportRoutes);
 app.use("/notifications", notificationRoutes);
-const PORT=process.env.PORT || 9001
+app.use("/binance", binanceRouter);
+
+const PORT = process.env.PORT || 9001;
 
 app.listen(9001, () => {
  console.log("Server started on port 9001");
 });
-
