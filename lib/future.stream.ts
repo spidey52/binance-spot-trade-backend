@@ -207,10 +207,12 @@ const sellHandler = async (trade: any) => {
  }
 };
 
+const name = process.env.SERVER_NAME;
+
 const sendFutureTradeNotification = async ({ symbol, price, quantity, side, realizedProfit, executionType }: any) => {
  try {
   await handleCustomNotification({
-   title: "New Future Trade" + " " + executionType,
+   title: "New Future Trade" + " " + executionType + " " + name,
    body: `Symbol: ${symbol} | Price: ${price} | Quantity: ${quantity} | Side: ${side} | Realized Profit: ${realizedProfit}`,
   });
  } catch (error: any) {
