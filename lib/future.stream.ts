@@ -140,14 +140,18 @@ const buyHandler = async (trade: any) => {
  } catch (error: any) {
   console.log(error.message);
   console.log("Failed to create limit sell order");
+  handleCustomNotification({
+   title: "Failed to create limit sell order for " + trade.s,
+   body: error.message,
+  });
   return;
  }
 };
 
 const sellHandler = async (trade: any) => {
+ const { i: orderId, s: symbol, q: quantity, p: sellPrice } = trade;
  try {
   console.log("Sell Handler", trade);
-  const { i: orderId, s: symbol, q: quantity, p: sellPrice } = trade;
 
   const isAlreadyExecuted = await FutureTradeModel.findOne({ orderId, sellPrice: { $exists: true } });
   if (isAlreadyExecuted) return;
@@ -172,19 +176,11 @@ const sellHandler = async (trade: any) => {
   const isSellPositionExists = await FutureTradeModel.findOne({ symbol, sellPrice: { $exists: false } });
 
   if (!isSellPositionExists) {
-   await futureExchange.createLimitBuyOrder(symbol, quantity, sellPrice);
+   const futureTicker = await FutureTickerModel.findOne({ symbol }).lean();
+   if (futureTicker && futureTicker.oomp && futureTicker.amount) {
+    await futureExchange.createLimitBuyOrder(symbol, futureTicker.amount, sellPrice);
+   }
   }
-
-  // if (!isSellPositionExists) {
-  //  const ticker = await FutureTickerModel.findOne({ symbol });
-  //  if (!ticker) return null;
-  //  if (ticker.oomp) {
-  //   await futureExchange.createLimitBuyOrder(symbol, sellPrice, ticker.amount);
-  //  }
-  // } else {
-  //  const isExits = findPendingOrder(symbol, minValueTrade.buyPrice);
-  //  if (!isExits) await futureExchange.createLimitBuyOrder(symbol, quantity, minValueTrade.buyPrice);
-  // }
 
   const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
 
@@ -194,13 +190,19 @@ const sellHandler = async (trade: any) => {
     price: sellPrice,
     quantity,
     side: "SELL",
-    realizedProfit: profit,
+    realizedProfit: profit.toFixed(2),
     executionType: "Filled",
    });
   } catch (error) {}
  } catch (error: any) {
   console.log(error.message);
   console.log("Failed to create limit buy order");
+
+  handleCustomNotification({
+   title: "Failed to create limit buy order for " + trade.s,
+   body: error.message,
+  });
+
   return;
  }
 };

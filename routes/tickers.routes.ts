@@ -41,6 +41,18 @@ router.post("/future", async (req, res) => {
  }
 });
 
+router.patch("/future/:id", async (req, res) => {
+ try {
+  const { id } = req.params;
+  const body = req.body;
+  const updatedTicker = await FutureTickerModel.findOneAndUpdate({ _id: id }, body, { new: true });
+  if (!updatedTicker) return res.status(400).send({ message: "Ticker not found" });
+  return res.status(200).send(updatedTicker);
+ } catch (error) {
+  return handleInternalError(req, res, error);
+ }
+});
+
 router.patch("/:id", async (req: Request, res: Response) => {
  try {
   const { id } = req.params;
