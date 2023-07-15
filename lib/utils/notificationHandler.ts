@@ -13,13 +13,12 @@ const sendNotification = async (title: string, body: string) => {
   to: token,
  };
  try {
-  await sendFirebaseNotification([token], title, body, {});
+  await sendFirebaseNotification(token, title, body, {});
  } catch (error) {
   console.log(error);
   return false;
  }
 };
-
 
 type BuyNotification = {
  symbol: string;
