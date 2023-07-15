@@ -5,12 +5,10 @@ import redisClient from "./redis/redis_conn";
 
 dotenv.config();
 
-
 // cloud messaging scopes
 const SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"];
 
 const servicefile = process.env.FIREBASE_SERVICE_ACCOUNT;
-
 
 async function getAccessToken() {
  if (!servicefile) {
@@ -44,7 +42,7 @@ const sendFirebaseNotifcation = async (tokens: string[], title: string, body: st
  const message = {
   token: tokens.join(","),
   notification: {
-   title,
+   title: title + ` - Algo Trade ${process.env.SERVER_NAME}`,
    body,
   },
   data: {
@@ -52,7 +50,7 @@ const sendFirebaseNotifcation = async (tokens: string[], title: string, body: st
   },
  };
 
- const url = "https://fcm.googleapis.com/v1/projects/algo-trade-dcceb/messages:send"
+ const url = "https://fcm.googleapis.com/v1/projects/algo-trade-dcceb/messages:send";
 
  if (!url) {
   console.log("FIREBASE_CLOUD_MESSAGING_URL env variables not set");
@@ -77,4 +75,4 @@ const sendFirebaseNotifcation = async (tokens: string[], title: string, body: st
  }
 };
 
-export default sendFirebaseNotifcation
+export default sendFirebaseNotifcation;
