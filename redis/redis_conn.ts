@@ -6,30 +6,15 @@ const redisClient = new Redis();
 export const subscriberClient = redisClient.duplicate();
 
 export const getFcmToken = async () => {
- //  const token = await redisClient.get("fcmToken");
- const allKeys = await redisClient.keys("fcmToken*");
+ const token = await redisClient.get("fcmToken");
 
- let token: string[] = [];
+  if (!token) return [];
+  return [token];
 
- for (const key of allKeys) {
-  const value = await redisClient.get(key);
-  if (value) token.push(value);
-  else {
-   await redisClient.del(key);
-  }
-  //  console.log(value);
-  //  console.log(key);
-  //  console.log(token);
-  //  console.log("====================================");
-  //  console.log("==================
- }
-
-	return token;
 };
 
 export const setFcmToken = async (token: string) => {
- const key = randomBytes(8).toString("hex");
- await redisClient.set("fcmToken" + key, token, "EX", 60 * 60 * 24);
+ await redisClient.set("fcmToken", token);
 };
 
 export default redisClient;
