@@ -94,16 +94,23 @@ router.post("/future/replace-all", async (req, res) => {
 
   const pendingTrades = await FutureTradeModel.find({ symbol, sellPrice: { $exists: false } });
 
-  const sellOrderPrice = pendingTrades
-   .map((el) => {
-    if (!el.buyPrice) return 0;
-    return el.buyPrice * (1 + ticker.sellPercent / 100);
-   })
-   .filter((el) => el !== 0);
+  // const sellOrderPrice = pendingTrades
+  //  .map((el) => {
+  //   if (!el.buyPrice) return 0;
+  //   return el.buyPrice * (1 + ticker.sellPercent / 100);
+  //  })
+  //  .filter((el) => el !== 0);
 
-  for (let orderPrice of sellOrderPrice) {
-   if (!ticker.amount) return res.status(400).send({ message: "Ticker amount not found" });
-   await futureExchange.createLimitOrder(symbol, "sell", ticker.amount, orderPrice);
+  // for (let orderPrice of sellOrderPrice) {
+  //  if (!ticker.amount) return res.status(400).send({ message: "Ticker amount not found" });
+  //  await futureExchange.createLimitOrder(symbol, "sell", ticker.amount, orderPrice);
+  // }
+
+  for (let trade of pendingTrades) {
+   if (!trade.buyPrice) return res.status(400).send({ message: "Ticker buy price not found" });
+   if (!trade.quantity) return res.status(400).send({ message: "Ticker quantity not found" });
+
+   await futureExchange.createLimitOrder(symbol, "sell", trade.quantity, trade.buyPrice * (1 + ticker.sellPercent / 100));
   }
 
   return res.status(200).send({ message: "order placed succesfully" });
