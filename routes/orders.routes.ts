@@ -8,6 +8,7 @@ import TickerModel from "../models/ticker.models";
 import TradeModel from "../models/trades.models";
 import { futureExchange } from "../lib/utils/order.future";
 import FutureTickerModel from "../models/future/future.ticker.models";
+import axios from "axios";
 
 const router = Router();
 
@@ -77,6 +78,34 @@ router.post("/future/place", async (req, res) => {
   if (!symbol || !side || !price || !amount) return res.status(400).send({ message: "Missing required fields" });
 
   const order = await futureExchange.createLimitOrder(symbol, side, amount, price);
+  return res.status(200).send({ message: "order placed succesfully" });
+ } catch (error) {
+  return handleInternalError(req, res, error);
+ }
+});
+
+router.post("/future/replace-all", async (req, res) => {
+ try {
+  const { symbol } = req.body;
+  if (!symbol) return res.status(400).send({ message: "Missing required fields" });
+
+  const ticker = await FutureTickerModel.findOne({ symbol });
+  if (!ticker) return res.status(400).send({ message: "Ticker not found" });
+
+  const pendingTrades = await FutureTradeModel.find({ symbol, sellPrice: { $exists: false } });
+
+  const sellOrderPrice = pendingTrades
+   .map((el) => {
+    if (!el.buyPrice) return 0;
+    return el.buyPrice * (1 + ticker.sellPercent / 100);
+   })
+   .filter((el) => el !== 0);
+
+  for (let orderPrice of sellOrderPrice) {
+   if (!ticker.amount) return res.status(400).send({ message: "Ticker amount not found" });
+   await futureExchange.createLimitOrder(symbol, "sell", ticker.amount, orderPrice);
+  }
+
   return res.status(200).send({ message: "order placed succesfully" });
  } catch (error) {
   return handleInternalError(req, res, error);
