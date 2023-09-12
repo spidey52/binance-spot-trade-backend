@@ -4,6 +4,7 @@ import TradeModel from "../models/trades.models";
 import UserModel from "../models/users.models";
 import FutureTradeModel from "../models/future/future.trade.models";
 import mongoose, { Model, model } from "mongoose";
+import redisClient from "../redis/redis_conn";
 
 const router = Router();
 const user = "63beffd81c1312d53375a43f";
@@ -25,7 +26,9 @@ router.get("/", async (req: Request, res: Response) => {
 
   const { allTrades, totalProfit, total } = await fetchTrades({ searchQuery, page: mypage, limit: mylimit, filterDate }, market ? market.toString() : "SPOT");
 
-  return res.status(200).send({ allTrades, totalProfit, total });
+  const ltp = await redisClient.hgetall("satyam-coins");
+
+  return res.status(200).send({ allTrades, totalProfit, total, ltp });
  } catch (error: any) {
   handleInternalError(req, res, error);
  }
@@ -295,4 +298,3 @@ async function fetchSpotTrades({ searchQuery, limit, page, filterDate }: TradePa
 
  return { allTrades, totalProfit, total: count };
 }
-
