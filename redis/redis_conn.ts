@@ -16,17 +16,25 @@ export const setFcmToken = async (token: string) => {
  await redisClient.set("fcmToken", token);
 };
 
-const socket = new WebSocket("wss://stream.binance.com:9443/ws/!miniTicker@arr");
-socket.on("message", async (data: any) => {
- const jsonData = JSON.parse(data.toString());
+const initializeTickerSocket = () => {
+ const socket = new WebSocket("wss://stream.binance.com:9443/ws/!miniTicker@arr");
+ socket.on("message", async (data: any) => {
+  const jsonData = JSON.parse(data.toString());
 
- const obj: any = {};
+  const obj: any = {};
 
- for (let ticker of jsonData) {
-  obj[ticker.s] = ticker.c;
- }
+  for (let ticker of jsonData) {
+   obj[ticker.s] = ticker.c;
+  }
 
- await redisClient.hset("satyam-coins", obj);
-});
+  await redisClient.hset("satyam-coins", obj);
+ });
+
+ socket.on("close", () => {
+  return initializeTickerSocket();
+ });
+};
+
+initializeTickerSocket();
 
 export default redisClient;
