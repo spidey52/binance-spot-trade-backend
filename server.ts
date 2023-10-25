@@ -72,6 +72,6 @@ app.use("/binance", binanceRouter);
 
 const PORT = process.env.PORT || 9001;
 
-app.listen(9001, () => {
+app.listen(PORT, () => {
  console.log("Server started on port 9001");
 });

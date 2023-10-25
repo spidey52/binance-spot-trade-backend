@@ -134,7 +134,7 @@ router.post("/future/cancel", async (req, res) => {
 });
 
 router.post("/grid", async (req: Request, res: Response) => {
- const { symbol, initialPrice, percent, side, count, amount, isFuture } = req.body;
+ const { symbol, initialPrice, percent, side, count, amount } = req.body;
 
  try {
   if (!symbol || !initialPrice || !percent || !side || !count) return res.status(400).send({ message: "Missing required fields" });
@@ -143,12 +143,13 @@ router.post("/grid", async (req: Request, res: Response) => {
    apiKey: process.env.API_KEY,
    secret: process.env.API_SECRET,
    options: {
-    defaultType: isFuture ? "future" : "spot",
+    // defaultType: isFuture ? "future" : "spot",
+    defaultType: "future",
    },
   });
 
   let i = 0;
-  const ticker = await TickerModel.findOne({ symbol });
+  const ticker = await FutureTickerModel.findOne({ symbol });
   if (!ticker) return res.status(400).send({ message: "Ticker not found" });
   const { precision } = ticker;
 
