@@ -36,6 +36,7 @@ import redisClient, { setFcmToken, subscriberClient } from "./redis/redis_conn";
 // import futureTradeStream from "./lib/future.stream";
 import futureTradeStream from "./lib/future.stream";
 import binanceRouter from "./routes/binance.routes";
+import notificationEvent from "./lib/event/notification.event";
 
 const env = process.env.NODE_ENV;
 if (!env) {

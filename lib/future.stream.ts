@@ -6,6 +6,7 @@ import WebSocket from "ws";
 import FutureTradeModel from "../models/future/future.trade.models";
 import FutureTickerModel from "../models/future/future.ticker.models";
 import AsyncQueue from "./utils/myqueue";
+import notificationEvent from "./event/notification.event";
 
 const buyQueue = new AsyncQueue();
 const sellQueue = new AsyncQueue();
@@ -61,15 +62,15 @@ const futureTradeStream = async () => {
    } else if (parsedData.e === "ORDER_TRADE_UPDATE") {
     let trade: any = parsedData.o;
 
-    if (trade.x === "NEW") {
-     addOpenOrder(trade.s, trade.i + "", trade.p, trade.S.toLowerCase());
-    } else if (trade.x === "CANCELED") {
-     deleteOpenOrder(trade.s, trade.i + "");
-    } else if (trade.x === "REJECTED") {
-     deleteOpenOrder(trade.s, trade.i + "");
-    } else if (trade.x === "TRADE") {
-     deleteOpenOrder(trade.s, trade.i + "");
-    }
+    // if (trade.x === "NEW") {
+    //  addOpenOrder(trade.s, trade.i + "", trade.p, trade.S.toLowerCase());
+    // } else if (trade.x === "CANCELED") {
+    //  deleteOpenOrder(trade.s, trade.i + "");
+    // } else if (trade.x === "REJECTED") {
+    //  deleteOpenOrder(trade.s, trade.i + "");
+    // } else if (trade.x === "TRADE") {
+    //  deleteOpenOrder(trade.s, trade.i + "");
+    // }
 
     if (trade.x === "TRADE" && trade.X === "FILLED") {
      if (trade.S === "BUY") {
@@ -129,13 +130,18 @@ const buyHandler = async (trade: any) => {
   //  }
   // }
 
-  sendFutureTradeNotification({
-   symbol,
-   price: buyPrice,
-   quantity,
-   side: "BUY",
-   realizedProfit: 0,
-   executionType: "Filled",
+  // sendFutureTradeNotification({
+  //  symbol,
+  //  price: buyPrice,
+  //  quantity,
+  //  side: "BUY",
+  //  realizedProfit: 0,
+  //  executionType: "Filled",
+  // });
+
+  notificationEvent.emit("notification", {
+   title: `Buy Order Filled for ${symbol}`,
+   body: `Symbol: ${symbol} | Price: ${sellPrice} | Quantity: ${quantity} | Side: SELL | Realized Profit: 0.0`,
   });
  } catch (error: any) {
   console.log(error.message);
@@ -184,16 +190,10 @@ const sellHandler = async (trade: any) => {
 
   const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
 
-  try {
-   sendFutureTradeNotification({
-    symbol,
-    price: sellPrice,
-    quantity,
-    side: "SELL",
-    realizedProfit: profit.toFixed(2),
-    executionType: "Filled",
-   });
-  } catch (error) {}
+  notificationEvent.emit("notification", {
+   title: `Sell Order Filled for ${symbol}`,
+   body: `Symbol: ${symbol} | Price: ${sellPrice} | Quantity: ${quantity} | Side: SELL | Realized Profit: ${profit.toFixed(2)}`,
+  });
  } catch (error: any) {
   console.log(error.message);
   console.log("Failed to create limit buy order");
@@ -203,19 +203,6 @@ const sellHandler = async (trade: any) => {
    body: error.message,
   });
 
-  return;
- }
-};
-
-const sendFutureTradeNotification = async ({ symbol, price, quantity, side, realizedProfit, executionType }: any) => {
- try {
-  await handleCustomNotification({
-   title: "New Future Trade" + " " + executionType,
-   body: `Symbol: ${symbol} | Price: ${price} | Quantity: ${quantity} | Side: ${side} | Realized Profit: ${realizedProfit}`,
-  });
- } catch (error: any) {
-  console.log(error.message);
-  console.log("Failed to send notification");
   return;
  }
 };
