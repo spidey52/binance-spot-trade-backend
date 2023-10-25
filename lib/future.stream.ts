@@ -140,8 +140,8 @@ const buyHandler = async (trade: any) => {
   // });
 
   notificationEvent.emit("notification", {
-   title: `Buy Order Filled for ${symbol}`,
-   body: `Symbol: ${symbol} | Price: ${sellPrice} | Quantity: ${quantity} | Side: SELL | Realized Profit: 0.0`,
+   title: `New Buy Order Filled for ${symbol}`,
+   body: `Symbol: ${symbol} | Price: ${buyPrice} | Quantity: ${quantity} | Side: BUY | Realized Profit: 0.0`,
   });
  } catch (error: any) {
   console.log(error.message);
@@ -177,12 +177,14 @@ const sellHandler = async (trade: any) => {
   });
 
   await futureExchange.createLimitBuyOrder(symbol, quantity, minValueTrade.buyPrice);
+  const futureTicker = await FutureTickerModel.findOne({ symbol }).lean();
 
   // TODO: not know what is this for
-  const isSellPositionExists = await FutureTradeModel.findOne({ symbol, sellPrice: { $exists: false } });
+  const nextPrice = minValueTrade.buyPrice * ((100 + (futureTicker?.buyPercent || 2) * 2) / 100);
+
+  const isSellPositionExists = await FutureTradeModel.findOne({ symbol, sellPrice: { $exists: false }, buyPrice: { $lte: nextPrice } });
 
   if (!isSellPositionExists) {
-   const futureTicker = await FutureTickerModel.findOne({ symbol }).lean();
    if (futureTicker && futureTicker.oomp && futureTicker.amount) {
     await futureExchange.createLimitBuyOrder(symbol, futureTicker.amount, sellPrice);
    }
@@ -191,8 +193,8 @@ const sellHandler = async (trade: any) => {
   const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
 
   notificationEvent.emit("notification", {
-   title: `Sell Order Filled for ${symbol}`,
-   body: `Symbol: ${symbol} | Price: ${sellPrice} | Quantity: ${quantity} | Side: SELL | Realized Profit: ${profit.toFixed(2)}`,
+   title: `New Sell Order Filled for ${symbol}`,
+   body: `Symbol: ${symbol} | Price: ${sellPrice.toFixed(2)} | Quantity: ${quantity} | Side: SELL | Realized Profit: ${profit.toFixed(2)}`,
   });
  } catch (error: any) {
   console.log(error.message);
