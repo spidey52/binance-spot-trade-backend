@@ -194,7 +194,7 @@ const sellHandler = async (trade: any) => {
 
   notificationEvent.emit("notification", {
    title: `New Sell Order Filled for ${symbol}`,
-   body: `Symbol: ${symbol} | Price: ${sellPrice.toFixed(2)} | Quantity: ${quantity} | Side: SELL | Realized Profit: ${profit.toFixed(2)}`,
+   body: `Symbol: ${symbol} | Price: ${sellPrice} | Quantity: ${quantity} | Side: SELL | Realized Profit: ${profit.toFixed(2)}`,
   });
  } catch (error: any) {
   console.log(error.message);
