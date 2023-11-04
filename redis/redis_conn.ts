@@ -28,7 +28,7 @@ export const setFcmToken = async (token: string, prefix?: string) => {
  //  const tokens = await redisClient.set("fcmToken", token);
 
  if (prefix) {
-  await redisClient.set(`fcmToken:${prefix}`, token);
+  await redisClient.set(`fcmToken:${prefix}`, token, "EX", 60 * 60 * 24 * 2);
  } else {
   await redisClient.set("fcmToken", token);
  }
