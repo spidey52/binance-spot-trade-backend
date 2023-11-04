@@ -3,11 +3,11 @@ import { futureExchange } from "../lib/utils/order.future";
 
 const router = Router();
 
-router.get("/balancel");
+router.get("/balance", fetchBalance);
 
 // controllers
 
-const fetchBalance = async (req: Request, res: Response) => {
+async function fetchBalance(req: Request, res: Response) {
  try {
   const balance = await futureExchange.fetchBalance();
   // const multi = futureExchange.hasCancelOrders
@@ -15,4 +15,4 @@ const fetchBalance = async (req: Request, res: Response) => {
  } catch (error) {
   return res.status(500).json(error);
  }
-};
+}

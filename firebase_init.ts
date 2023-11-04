@@ -39,39 +39,42 @@ async function getAccessToken() {
 
 const sendFirebaseNotifcation = async (tokens: string[], title: string, body: string, data: any) => {
  const accessToken = await getAccessToken();
- const message = {
-  token: tokens.join(","),
-  notification: {
-   title: title + ` - Algo Trade ${process.env.SERVER_NAME}`,
-   body,
-  },
-  data: {
-   test: "test",
-  },
- };
 
- const url = "https://fcm.googleapis.com/v1/projects/algo-trade-dcceb/messages:send";
+ for (const token of tokens) {
+  const message = {
+   token: token,
+   notification: {
+    title: title + ` - Algo Trade ${process.env.SERVER_NAME}`,
+    body,
+   },
+   data: {
+    test: "test",
+   },
+  };
 
- if (!url) {
-  console.log("FIREBASE_CLOUD_MESSAGING_URL env variables not set");
-  process.exit(1);
- }
+  const url = "https://fcm.googleapis.com/v1/projects/algo-trade-dcceb/messages:send";
 
- const headers = {
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${accessToken}`,
- };
-
- try {
-  const response = await axios.post(url, { message }, { headers });
-  console.log(response.data);
- } catch (error: any) {
-  if (error.response.status == 401) {
-   redisClient.del("firebase_token");
-   sendFirebaseNotifcation(tokens, title, body, data);
-   return;
+  if (!url) {
+   console.log("FIREBASE_CLOUD_MESSAGING_URL env variables not set");
+   process.exit(1);
   }
-  console.log(error.message, error.response.data);
+
+  const headers = {
+   "Content-Type": "application/json",
+   Authorization: `Bearer ${accessToken}`,
+  };
+
+  try {
+   const response = await axios.post(url, { message }, { headers });
+   console.log(response.data);
+  } catch (error: any) {
+   if (error.response.status == 401) {
+    redisClient.del("firebase_token");
+    sendFirebaseNotifcation(tokens, title, body, data);
+    return;
+   }
+   console.log(error.message, error.response.data);
+  }
  }
 };
 

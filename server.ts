@@ -32,11 +32,13 @@ mongoose
 
 import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
 import autoTradeSync from "./lib/trade.sync";
-import redisClient, { setFcmToken, subscriberClient } from "./redis/redis_conn";
+import redisClient, { getFcmToken, setFcmToken, subscriberClient } from "./redis/redis_conn";
 // import futureTradeStream from "./lib/future.stream";
 import futureTradeStream from "./lib/future.stream";
 import binanceRouter from "./routes/binance.routes";
 import { futureExchange } from "./lib/utils/order.future";
+import { handleCustomNotification } from "./lib/utils/notificationHandler";
+import { send } from "process";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -78,3 +80,16 @@ const PORT = process.env.PORT || 9001;
 app.listen(PORT, () => {
  console.log("Server started on port 9001");
 });
+
+const sendMe = async () => {
+ const tokens = await getFcmToken();
+
+ const payload = {
+  notification: {
+   title: "Hello",
+   body: "Hello",
+  },
+ };
+
+ handleCustomNotification({ title: "Hello", body: "Hello" });
+};
