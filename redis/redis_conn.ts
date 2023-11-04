@@ -11,7 +11,13 @@ export const getFcmToken = async () => {
   if (!keys.length) return [];
   const tokens = await redisClient.mget(keys);
 
-  return tokens;
+  const result: string[] = [];
+
+  for (let token of tokens) {
+   if (token) result.push(token);
+  }
+
+  return result;
  } catch (error) {
   const token = await redisClient.get("fcmToken");
   return token ? [token] : [];
