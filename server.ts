@@ -2,7 +2,7 @@ import { handleInternalError } from "./error/error.handler";
 import * as dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
-import express from "express";
+import express, { Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
 
@@ -36,6 +36,7 @@ import redisClient, { setFcmToken, subscriberClient } from "./redis/redis_conn";
 // import futureTradeStream from "./lib/future.stream";
 import futureTradeStream from "./lib/future.stream";
 import binanceRouter from "./routes/binance.routes";
+import { futureExchange } from "./lib/utils/order.future";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -51,11 +52,13 @@ redisClient.on("connect", () => {
  console.log("Redis client connected");
 });
 
-app.post("/fcm", async (req, res) => {
+app.post("/fcm", async (req: Request, res: Response) => {
  const { token } = req.body;
+ const tokenMiddle = token.slice(0, 10);
+ console.log(tokenMiddle, "tokenMiddle");
 
  try {
-  await setFcmToken(token);
+  await setFcmToken(token, tokenMiddle);
   return res.status(200).send({ message: "Token saved" });
  } catch (error: any) {
   return handleInternalError(req, res, error);

@@ -6,14 +6,26 @@ const redisClient = new Redis();
 export const subscriberClient = redisClient.duplicate();
 
 export const getFcmToken = async () => {
- const token = await redisClient.get("fcmToken");
+ try {
+  const keys = await redisClient.keys("fcmToken:*");
+  if (!keys.length) return [];
+  const tokens = await redisClient.mget(keys);
 
- if (!token) return [];
- return [token];
+  return tokens;
+ } catch (error) {
+  const token = await redisClient.get("fcmToken");
+  return token ? [token] : [];
+ }
 };
 
-export const setFcmToken = async (token: string) => {
- await redisClient.set("fcmToken", token);
+export const setFcmToken = async (token: string, prefix?: string) => {
+ //  const tokens = await redisClient.set("fcmToken", token);
+
+ if (prefix) {
+  await redisClient.set(`fcmToken:${prefix}`, token);
+ } else {
+  await redisClient.set("fcmToken", token);
+ }
 };
 
 const initializeTickerSocket = () => {

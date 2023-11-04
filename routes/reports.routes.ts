@@ -1,8 +1,9 @@
 import { handleInternalError } from "./../error/error.handler";
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import TradeModel from "../models/trades.models";
 import FutureTradeModel from "../models/future/future.trade.models";
 import { futureExchange } from "../lib/utils/order.future";
+import moment from "moment";
 
 const router = Router();
 
@@ -171,16 +172,40 @@ export const futureProfitBySymbol = async () => {
  ]);
  return reports;
 };
+const dateHelper = () => {
+ const today = moment().startOf("day");
+ const yesterday = moment(today).subtract(1, "days").startOf("day");
+ const tomorrow = moment(today).add(1, "days").startOf("day");
+ const lastWeek = moment(today).subtract(7, "days").startOf("day");
+ const currentMonth = moment(today).startOf("month").startOf("day");
+ const lastMonth = moment(today).subtract(1, "months").startOf("day");
+ const lastYear = moment(today).subtract(1, "years").startOf("day");
+
+ return {
+  today,
+  yesterday,
+  tomorrow,
+  lastWeek,
+  currentMonth,
+  lastMonth,
+  lastYear,
+ };
+};
+
+export const getCardReport = async (req: Request, res: Response) => {
+ try {
+  const { today, yesterday, lastWeek, currentMonth, lastMonth, lastYear } = dateHelper();
+
+  const reports = await FutureTradeModel.aggregate([
+   {
+    $match: {
+     sellPrice: { $exists: true },
+    },
+   },
+  ]);
+ } catch (error) {
+  return handleInternalError(req, res, error);
+ }
+};
 
 export default router;
-
-const func = async () => {
-  let initialBalance = 30634;
-
-  while(initialBalance < 31500) {
-    initialBalance = initialBalance + initialBalance * (0.25 / 100)
-    console.log(initialBalance);
-  }
-
-};
-func();
