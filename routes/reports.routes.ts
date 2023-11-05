@@ -35,6 +35,8 @@ router.get("/future/symbol", async (req, res) => {
  }
 });
 
+router.get("/future/card", getCardReport);
+
 const getDailyReports = async () => {
  const reports = await TradeModel.aggregate([
   {
@@ -192,20 +194,124 @@ const dateHelper = () => {
  };
 };
 
-export const getCardReport = async (req: Request, res: Response) => {
+async function getCardReport(req: Request, res: Response) {
  try {
-  const { today, yesterday, lastWeek, currentMonth, lastMonth, lastYear } = dateHelper();
-
+  const { today, tomorrow, yesterday, lastWeek, currentMonth, lastMonth, lastYear } = dateHelper();
+  const group = {
+   _id: null,
+   profit: {
+    $sum: {
+     $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
+    },
+   },
+  };
   const reports = await FutureTradeModel.aggregate([
    {
     $match: {
      sellPrice: { $exists: true },
     },
    },
+   {
+    $facet: {
+     today: [
+      {
+       $match: {
+        sellTime: {
+         $gte: today.startOf("day").toDate(),
+         $lte: today.endOf("day").toDate(),
+        },
+       },
+      },
+      {
+       $group: group,
+      },
+     ],
+     yesterday: [
+      {
+       $match: {
+        sellTime: {
+         $gte: yesterday.startOf("day").toDate(),
+         $lte: yesterday.endOf("day").toDate(),
+        },
+       },
+      },
+      {
+       $group: group,
+      },
+     ],
+
+     lastWeek: [
+      {
+       $match: {
+        sellTime: {
+         $gte: lastWeek.startOf("day").toDate(),
+        },
+       },
+      },
+      {
+       $group: group,
+      },
+     ],
+
+     currentMonth: [
+      {
+       $match: {
+        sellTime: {
+         $gte: currentMonth.startOf("day").toDate(),
+        },
+       },
+      },
+      {
+       $group: group,
+      },
+     ],
+
+     total: [
+      {
+       $group: group,
+      },
+     ],
+    },
+   },
+   {
+    $project: {
+     today: { $arrayElemAt: ["$today", 0] },
+     yesterday: { $arrayElemAt: ["$yesterday", 0] },
+     lastWeek: { $arrayElemAt: ["$lastWeek", 0] },
+     currentMonth: { $arrayElemAt: ["$currentMonth", 0] },
+     total: { $arrayElemAt: ["$total", 0] },
+    },
+   },
+   {
+    $project: {
+     today: "$today.profit",
+     yesterday: "$yesterday.profit",
+     LastSevenDays: "$lastWeek.profit",
+     currentMonth: "$currentMonth.profit",
+     total: "$total.profit",
+    },
+   },
   ]);
+
+  const result: { title: string; profit: number }[] = [];
+
+  const report = reports[0];
+
+  if (!report) return res.status(200).json({ result: [] });
+
+  for (const key in report) {
+   const value = report[key];
+
+   result.push({
+    title: key,
+    profit: value,
+   });
+  }
+
+  return res.status(200).json({ result });
  } catch (error) {
   return handleInternalError(req, res, error);
  }
-};
+}
 
 export default router;
