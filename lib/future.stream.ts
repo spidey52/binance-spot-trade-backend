@@ -8,8 +8,9 @@ import FutureTickerModel from "../models/future/future.ticker.models";
 import AsyncQueue from "./utils/myqueue";
 import notificationEvent from "./event/notification.event";
 
-const buyQueue = new AsyncQueue();
-const sellQueue = new AsyncQueue();
+// const buyQueue = new AsyncQueue();
+// const sellQueue = new AsyncQueue();
+const myQueue = new Map<string, AsyncQueue>();
 
 const futureTradeStream = async () => {
  let listenerKey = "";
@@ -75,11 +76,24 @@ const futureTradeStream = async () => {
     if (trade.x === "TRADE" && trade.X === "FILLED") {
      if (trade.S === "BUY") {
       // await buyHandler(trade);
+      // const buyQueue = myQueue.get(trade.s) || new AsyncQueue();
+      let buyQueue = myQueue.get(trade.s);
+      if (!buyQueue) {
+       buyQueue = new AsyncQueue();
+       myQueue.set(trade.s, buyQueue);
+      }
+
       await buyQueue.enqueue(async () => {
        await buyHandler(trade);
       });
      } else if (trade.S === "SELL") {
       // await sellHandler(trade);
+      let sellQueue = myQueue.get(trade.s);
+      if (!sellQueue) {
+       sellQueue = new AsyncQueue();
+       myQueue.set(trade.s, sellQueue);
+      }
+
       await sellQueue.enqueue(async () => {
        await sellHandler(trade);
       });
