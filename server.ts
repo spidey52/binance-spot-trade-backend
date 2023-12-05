@@ -39,6 +39,10 @@ import binanceRouter from "./routes/binance.routes";
 import { futureExchange } from "./lib/utils/order.future";
 import { handleCustomNotification } from "./lib/utils/notificationHandler";
 import { send } from "process";
+import FutureTickerModel from "./models/future/future.ticker.models";
+import sendFirebaseNotifcation from "./firebase_init";
+import moment from "moment";
+import notificationEvent from "./lib/event/notification.event";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -77,19 +81,62 @@ app.use("/binance", binanceRouter);
 
 const PORT = process.env.PORT || 9001;
 
-app.listen(PORT, () => {
- console.log("Server started on port 9001");
-});
+// app.listen(PORT, () => {
+//  console.log("Server started on port 9001");
+// });
+const main = async () => {
+ await setMaxPendingOrders();
+ app.listen(PORT, () => {
+  console.log("Server started on port 9001");
+ });
+};
 
-const sendMe = async () => {
- const tokens = await getFcmToken();
+main();
+const setMaxPendingOrders = async () => {
+ //  const tickers = await FutureTickerModel.find({});
 
- const payload = {
-  notification: {
-   title: "Hello",
-   body: "Hello",
+ await FutureTickerModel.updateMany(
+  {
+   maxPendingOrders: { $exists: false },
   },
- };
+  { maxPendingOrders: 10 }
+ );
+};
 
- handleCustomNotification({ title: "Hello", body: "Hello" });
+// crons
+let interval = 1000 * 60 * 5;
+
+setInterval(async () => {
+ const tickers = await FutureTickerModel.find({});
+
+ for (let i = 0; i < tickers.length; i++) {
+  const symbol = tickers[i].symbol;
+
+  try {
+   await findOrdersAndCancel(symbol, tickers[i].maxPendingOrders);
+  } catch (error: any) {
+   console.log(error.message);
+  }
+ }
+}, interval);
+
+const findOrdersAndCancel = async (symbol: string, maxOrder: number) => {
+ const orders = await futureExchange.fetchOpenOrders(symbol);
+ const buyOrders = orders.filter((order) => order.side === "buy");
+ //  sort buy orders by price
+
+ buyOrders.sort((a, b) => b.price - a.price);
+
+ const cancelOrders = buyOrders.slice(maxOrder);
+ let cancelOrderIds: string[] = [];
+
+ for (let i = 0; i < cancelOrders.length; i++) {
+  await futureExchange.cancelOrder(cancelOrders[i].id, symbol);
+  cancelOrderIds.push(cancelOrders[i].id);
+ }
+
+ notificationEvent.emit("notification", {
+  title: `Canceled ${cancelOrders.length} orders for ${symbol}`,
+  body: `Symbol: ${symbol} | Orders: ${cancelOrderIds.join(", ")} | Time: ${moment().format("HH:mm:ss")}`,
+ });
 };

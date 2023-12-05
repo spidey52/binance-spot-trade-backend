@@ -10,6 +10,7 @@ const tickerSchema = new Schema(
   ros: { type: Boolean, required: true, default: true, description: "reorder on sell" },
   oomp: { type: Boolean, required: true, default: false },
   amount: { type: Number, required: true },
+  maxPendingOrders: { type: Number, required: true, default: 10 },
   precision: { type: Number, required: true, default: 4 },
  },
  {
