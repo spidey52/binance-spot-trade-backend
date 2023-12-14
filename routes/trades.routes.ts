@@ -1,13 +1,16 @@
-import { handleInternalError } from "./../error/error.handler";
-import { Router, Request, Response } from "express";
-import TradeModel from "../models/trades.models";
-import UserModel from "../models/users.models";
+import { Request, Response, Router } from "express";
+import { model } from "mongoose";
+import TradeController from "../controllers/trade.controller";
 import FutureTradeModel from "../models/future/future.trade.models";
-import mongoose, { Model, model } from "mongoose";
+import TradeModel from "../models/trades.models";
 import redisClient from "../redis/redis_conn";
+import { handleInternalError } from "./../error/error.handler";
 
 const router = Router();
 const user = "63beffd81c1312d53375a43f";
+
+router.get("/grouped/pending", TradeController.groupedPendingTrades);
+router.get("/grouped/completed", TradeController.groupedCompletedTrades);
 
 router.get("/", async (req: Request, res: Response) => {
  try {

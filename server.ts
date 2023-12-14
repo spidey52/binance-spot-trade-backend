@@ -91,7 +91,6 @@ const main = async () => {
  });
 };
 
-main();
 const setMaxPendingOrders = async () => {
  //  const tickers = await FutureTickerModel.find({});
 
@@ -102,6 +101,7 @@ const setMaxPendingOrders = async () => {
   { maxPendingOrders: 10 }
  );
 };
+main();
 
 // crons
 let interval = 1000 * 60 * 5;
