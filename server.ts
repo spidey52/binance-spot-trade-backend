@@ -1,10 +1,10 @@
-import { handleInternalError } from "./error/error.handler";
-import * as dotenv from "dotenv";
-dotenv.config();
-import mongoose from "mongoose";
-import express, { Request, Response } from "express";
-import morgan from "morgan";
 import cors from "cors";
+import * as dotenv from "dotenv";
+import express, { Request, Response } from "express";
+import mongoose from "mongoose";
+import morgan from "morgan";
+import { handleInternalError } from "./error/error.handler";
+dotenv.config();
 
 const app = express();
 app.use(morgan("dev"));
@@ -30,19 +30,16 @@ mongoose
   console.log(err.message);
  });
 
-import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
 import autoTradeSync from "./lib/trade.sync";
-import redisClient, { getFcmToken, setFcmToken, subscriberClient } from "./redis/redis_conn";
+import redisClient, { setFcmToken } from "./redis/redis_conn";
+import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
 // import futureTradeStream from "./lib/future.stream";
-import futureTradeStream from "./lib/future.stream";
-import binanceRouter from "./routes/binance.routes";
-import { futureExchange } from "./lib/utils/order.future";
-import { handleCustomNotification } from "./lib/utils/notificationHandler";
-import { send } from "process";
-import FutureTickerModel from "./models/future/future.ticker.models";
-import sendFirebaseNotifcation from "./firebase_init";
 import moment from "moment";
 import notificationEvent from "./lib/event/notification.event";
+import futureTradeStream from "./lib/future.stream";
+import { futureExchange } from "./lib/utils/order.future";
+import FutureTickerModel from "./models/future/future.ticker.models";
+import binanceRouter from "./routes/binance.routes";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -134,6 +131,8 @@ const findOrdersAndCancel = async (symbol: string, maxOrder: number) => {
   await futureExchange.cancelOrder(cancelOrders[i].id, symbol);
   cancelOrderIds.push(cancelOrders[i].id);
  }
+
+ if (cancelOrderIds.length === 0) return;
 
  notificationEvent.emit("notification", {
   title: `Canceled ${cancelOrders.length} orders for ${symbol}`,
