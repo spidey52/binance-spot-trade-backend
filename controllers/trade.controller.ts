@@ -14,10 +14,22 @@ const groupedPendingTrades = async (req: Request, res: Response) => {
     $group: {
      _id: "$symbol",
      trades: { $push: "$$ROOT" },
-     avgBuyPrice: { $avg: "$buyPrice" },
      totalQty: { $sum: "$quantity" },
      tradeCount: { $sum: 1 },
      investment: { $sum: kCalculateInvestment },
+    },
+   },
+   {
+    $sort: { investment: -1 },
+   },
+   {
+    $project: {
+     _id: 0,
+     symbol: "$_id",
+     totalQty: 1,
+     tradeCount: 1,
+     investment: 1,
+     avgBuyPrice: { $divide: ["$investment", "$totalQty"] },
     },
    },
   ]);

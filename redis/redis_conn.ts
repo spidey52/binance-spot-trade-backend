@@ -1,5 +1,4 @@
 import { Redis } from "ioredis";
-import { json } from "stream/consumers";
 import { WebSocket } from "ws";
 
 const redisClient = new Redis();
@@ -25,10 +24,10 @@ export const getFcmToken = async () => {
 };
 
 export const setFcmToken = async (token: string, prefix?: string) => {
- //  const tokens = await redisClient.set("fcmToken", token);
+ const fourHour = 60 * 60 * 4;
 
  if (prefix) {
-  await redisClient.set(`fcmToken:${prefix}`, token, "EX", 60 * 60 * 24 * 2);
+  await redisClient.set(`fcmToken:${prefix}`, token, "EX", fourHour);
  } else {
   await redisClient.set("fcmToken", token);
  }
