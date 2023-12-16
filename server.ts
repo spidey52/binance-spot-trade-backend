@@ -34,10 +34,7 @@ import autoTradeSync from "./lib/trade.sync";
 import redisClient, { setFcmToken } from "./redis/redis_conn";
 import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
 // import futureTradeStream from "./lib/future.stream";
-import moment from "moment";
-import notificationEvent from "./lib/event/notification.event";
 import futureTradeStream from "./lib/future.stream";
-import { futureExchange } from "./lib/utils/order.future";
 import FutureTickerModel from "./models/future/future.ticker.models";
 import binanceRouter from "./routes/binance.routes";
 
@@ -99,43 +96,3 @@ const setMaxPendingOrders = async () => {
  );
 };
 main();
-
-// crons
-let interval = 1000 * 60 * 5;
-
-setInterval(async () => {
- const tickers = await FutureTickerModel.find({});
-
- for (let i = 0; i < tickers.length; i++) {
-  const symbol = tickers[i].symbol;
-
-  try {
-   await findOrdersAndCancel(symbol, tickers[i].maxPendingOrders);
-  } catch (error: any) {
-   console.log(error.message);
-  }
- }
-}, interval);
-
-const findOrdersAndCancel = async (symbol: string, maxOrder: number) => {
- const orders = await futureExchange.fetchOpenOrders(symbol);
- const buyOrders = orders.filter((order) => order.side === "buy");
- //  sort buy orders by price
-
- buyOrders.sort((a, b) => b.price - a.price);
-
- const cancelOrders = buyOrders.slice(maxOrder);
- let cancelOrderIds: string[] = [];
-
- for (let i = 0; i < cancelOrders.length; i++) {
-  await futureExchange.cancelOrder(cancelOrders[i].id, symbol);
-  cancelOrderIds.push(cancelOrders[i].id);
- }
-
- if (cancelOrderIds.length === 0) return;
-
- notificationEvent.emit("notification", {
-  title: `Canceled ${cancelOrders.length} orders for ${symbol}`,
-  body: `Symbol: ${symbol} | Orders: ${cancelOrderIds.join(", ")} | Time: ${moment().format("HH:mm:ss")}`,
- });
-};

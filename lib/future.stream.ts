@@ -1,12 +1,12 @@
-import { addOpenOrder, deleteOpenOrder, findPendingOrder, futureExchange } from "./utils/order.future";
-import { subscriberClient } from "./../redis/redis_conn";
-import { handleCustomNotification } from "./utils/notificationHandler";
 import axios from "axios";
 import WebSocket from "ws";
-import FutureTradeModel from "../models/future/future.trade.models";
 import FutureTickerModel from "../models/future/future.ticker.models";
-import AsyncQueue from "./utils/myqueue";
+import FutureTradeModel from "../models/future/future.trade.models";
 import notificationEvent from "./event/notification.event";
+import OrderEvent from "./event/order.event";
+import AsyncQueue from "./utils/myqueue";
+import { handleCustomNotification } from "./utils/notificationHandler";
+import { futureExchange } from "./utils/order.future";
 
 // const buyQueue = new AsyncQueue();
 // const sellQueue = new AsyncQueue();
@@ -210,6 +210,8 @@ const sellHandler = async (trade: any) => {
    title: `New Sell Order Filled for ${symbol}`,
    body: `Symbol: ${symbol} | Price: ${sellPrice} | Quantity: ${quantity} | Side: SELL | Realized Profit: ${profit.toFixed(2)}`,
   });
+
+  OrderEvent.evt.emit(OrderEvent.EventType.CANCEL_OPEN_ORDERS, symbol);
  } catch (error: any) {
   console.log(error.message);
   console.log("Failed to create limit buy order");

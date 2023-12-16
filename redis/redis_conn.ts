@@ -1,4 +1,5 @@
 import { Redis } from "ioredis";
+import moment from "moment";
 import { WebSocket } from "ws";
 
 const redisClient = new Redis();
@@ -43,6 +44,8 @@ const initializeTickerSocket = () => {
   for (let ticker of jsonData) {
    obj[ticker.s] = ticker.c;
   }
+
+  console.log(`Ticker updated at ${moment().format("DD-MM-YYYY HH:mm:ss")}`);
 
   await redisClient.hset("satyam-coins", obj);
  });
