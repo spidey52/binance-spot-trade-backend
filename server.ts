@@ -86,8 +86,6 @@ const main = async () => {
 };
 
 const setMaxPendingOrders = async () => {
- //  const tickers = await FutureTickerModel.find({});
-
  await FutureTickerModel.updateMany(
   {
    maxPendingOrders: { $exists: false },

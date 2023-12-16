@@ -1,6 +1,7 @@
 import { Redis } from "ioredis";
 import moment from "moment";
 import { WebSocket } from "ws";
+import { IPriceListener } from "../models/future/price.listener.models";
 
 const redisClient = new Redis();
 export const subscriberClient = redisClient.duplicate();
@@ -34,6 +35,8 @@ export const setFcmToken = async (token: string, prefix?: string) => {
  }
 };
 
+const priceListeners: IPriceListener[] = [];
+
 const initializeTickerSocket = () => {
  const socket = new WebSocket("wss://stream.binance.com:9443/ws/!miniTicker@arr");
  socket.on("message", async (data: any) => {
@@ -48,6 +51,16 @@ const initializeTickerSocket = () => {
   console.log(`Ticker updated at ${moment().format("DD-MM-YYYY HH:mm:ss")}`);
 
   await redisClient.hset("satyam-coins", obj);
+
+  // if (priceListeners.length === 0) {
+  //  const activeListeners = await PriceListenerModel.find({ active: true });
+
+  //  for (let listener of activeListeners) {
+  //   const id = listener._id.toString();
+  //   const isExists = priceListeners.find((item) => item._id.toString() === id);
+  //   if (!isExists) priceListeners.push(listener);
+  //  }
+  // }
  });
 
  socket.on("close", () => {
