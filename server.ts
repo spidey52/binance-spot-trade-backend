@@ -108,9 +108,7 @@ app.post("/servers", async (req, res) => {
    obj[key] = servers[key];
   }
 
-  setTimeout(() => {
-   return res.status(200).send(obj);
-  }, 4000);
+  return res.status(200).send(obj);
 
   // return res.status(200).send(obj);
  } catch (error) {
