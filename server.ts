@@ -1,6 +1,7 @@
 import cors from "cors";
 import * as dotenv from "dotenv";
 import express, { Request, Response } from "express";
+import fs from "fs/promises";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import { handleInternalError } from "./error/error.handler";
@@ -84,6 +85,38 @@ const main = async () => {
   console.log("Server started on port 9001");
  });
 };
+
+app.post("/servers", async (req, res) => {
+ try {
+  const { auth } = req.body;
+  const filePath = "./servers.json";
+
+  const content = await fs.readFile(filePath, "utf8");
+  const servers = JSON.parse(content);
+
+  if (!servers[auth]) return res.status(401).send({ message: "Invalid auth" });
+
+  const keys = servers[auth];
+
+  type KeyValue = {
+   [key: string]: string;
+  };
+
+  const obj: KeyValue = {};
+
+  for (let key of keys) {
+   obj[key] = servers[key];
+  }
+
+  setTimeout(() => {
+   return res.status(200).send(obj);
+  }, 4000);
+
+  // return res.status(200).send(obj);
+ } catch (error) {
+  return handleInternalError(req, res, error);
+ }
+});
 
 const setMaxPendingOrders = async () => {
  await FutureTickerModel.updateMany(
