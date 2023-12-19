@@ -7,8 +7,19 @@ type GroupValue = "D" | "M" | "Y";
 const fetchChartReport = async (req: Request, res: Response) => {
  try {
   const groupValue = req.query.groupValue as GroupValue;
+  const startDate = req.query.startDate as string;
+  const endDate = req.query.endDate as string;
 
-  const report = await calculateGroupedReport(groupValue, {});
+  const filter: any = {};
+
+  if (startDate && endDate) {
+   filter.sellTime = {
+    $gte: moment(startDate).startOf("day").toDate(),
+    $lte: moment(endDate).endOf("day").toDate(),
+   };
+  }
+
+  const report = await calculateGroupedReport(groupValue, filter);
 
   return res.status(200).send({ report });
  } catch (error: any) {
