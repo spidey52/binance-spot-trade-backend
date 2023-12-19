@@ -48,7 +48,7 @@ const calculateGroupedReport = async (groupValue: GroupValue = "M", filter: any)
    },
   },
   {
-   $sort: { _id: -1 },
+   $sort: { _id: 1 },
   },
 
   {
@@ -88,6 +88,8 @@ const calculateGroupedReport = async (groupValue: GroupValue = "M", filter: any)
 
   r.date = title;
  });
+
+ report.reverse();
  return report;
 };
 
