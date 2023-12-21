@@ -2,6 +2,8 @@ import { Redis } from "ioredis";
 import moment from "moment";
 import { WebSocket } from "ws";
 import { IPriceListener } from "../models/future/price.listener.models";
+import handlePriceListener from "../price_listener.handler";
+import appSettings from "../settings";
 
 const redisClient = new Redis();
 export const subscriberClient = redisClient.duplicate();
@@ -26,7 +28,7 @@ export const getFcmToken = async () => {
 };
 
 export const setFcmToken = async (token: string, prefix?: string) => {
- const fourHour = 60 * 60 * 4;
+ const fourHour = 60 * 60 * 12;
 
  if (prefix) {
   await redisClient.set(`fcmToken:${prefix}`, token, "EX", fourHour);
@@ -45,22 +47,17 @@ const initializeTickerSocket = () => {
   const obj: any = {};
 
   for (let ticker of jsonData) {
-   obj[ticker.s] = ticker.c;
+   obj[ticker.s] = +ticker.c;
   }
 
-  console.log(`Ticker updated at ${moment().format("DD-MM-YYYY HH:mm:ss")}`);
+  if (appSettings.priceListenerLog) console.log(`Ticker updated at ${moment().format("DD-MM-YYYY HH:mm:ss")}`);
 
   await redisClient.hset("satyam-coins", obj);
+  const perf = performance.now();
+  await handlePriceListener(obj);
+  const perf2 = performance.now();
 
-  // if (priceListeners.length === 0) {
-  //  const activeListeners = await PriceListenerModel.find({ active: true });
-
-  //  for (let listener of activeListeners) {
-  //   const id = listener._id.toString();
-  //   const isExists = priceListeners.find((item) => item._id.toString() === id);
-  //   if (!isExists) priceListeners.push(listener);
-  //  }
-  // }
+  if (appSettings.priceListnerPerfLog) console.log(`Price Listener took ${(perf2 - perf).toFixed(2)} milliseconds`);
  });
 
  socket.on("close", () => {

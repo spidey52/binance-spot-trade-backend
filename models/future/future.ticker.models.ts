@@ -1,5 +1,4 @@
-import { model } from "mongoose";
-import { Schema } from "mongoose";
+import { Schema, model } from "mongoose";
 
 const tickerSchema = new Schema(
  {
@@ -12,6 +11,7 @@ const tickerSchema = new Schema(
   amount: { type: Number, required: true },
   maxPendingOrders: { type: Number, required: true, default: 10 },
   precision: { type: Number, required: true, default: 4 },
+  ignoreStream: { type: Boolean, required: true, default: false }, // we can use it as inactive ticker
  },
  {
   timestamps: true,

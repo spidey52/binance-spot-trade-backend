@@ -1,17 +1,11 @@
-1. grouped pending trades.
-2. export total pending trades, and total completed trades.
-3. notification token should be cached only for 2 hours.
+1. export total pending trades, and total completed trades.
+2. ignore all stream
+3. cancel all order from exchange
+4. replace all order from exchange based on ticker configuration
 
 // Price Listener // change in tickers
 
-/\*
+// solved
 
-    price listener => gte, lte.
-
-    eventType => 'notifcation', 'changeTickerSettings', []
-
-
-    1. on price reach, greater than or less than, send notification.
-    2. on price reach, change ticker settings.
-
-\*/
+[x] notification token should be cached only for 2 hours.
+[x] grouped pending trades.

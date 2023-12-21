@@ -9,7 +9,7 @@ export interface IPriceListener extends mongoose.Document {
  event: Event;
  expression: Expression;
  active: boolean;
- payload: any;
+ payload: Object;
  createdAt: Date;
  updatedAt: Date;
 }

@@ -74,6 +74,10 @@ const futureTradeStream = async () => {
     // }
 
     if (trade.x === "TRADE" && trade.X === "FILLED") {
+     const ticker = await FutureTickerModel.findOne({ symbol: trade.s }).lean();
+     if (!ticker) return console.log("Ticker not found");
+     if (ticker.ignoreStream) return notificationEvent.emit("notification", { title: "Trade Ignored", body: `Trade ignored for ${trade.s}` });
+
      if (trade.S === "BUY") {
       // await buyHandler(trade);
       // const buyQueue = myQueue.get(trade.s) || new AsyncQueue();
