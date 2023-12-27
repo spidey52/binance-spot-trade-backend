@@ -1,7 +1,7 @@
 import event from "events";
 import notificationEvent from "./lib/event/notification.event";
+import FutureTickerModel from "./models/future/future.ticker.models";
 import PriceListenerModel, { IPriceListener } from "./models/future/price.listener.models";
-import TickerModel from "./models/ticker.models";
 
 const priceListenerEmitter = new event.EventEmitter();
 
@@ -10,7 +10,7 @@ priceListenerEmitter.on("TICKER_EDIT", async ({ listener }: { listener: IPriceLi
   const { _id: listenerId, symbol, payload } = listener;
 
   await PriceListenerModel.findByIdAndUpdate(listenerId, { active: false });
-  await TickerModel.findOneAndUpdate({ symbol }, payload);
+  await FutureTickerModel.findOneAndUpdate({ symbol }, payload);
 
   notificationEvent.emit("notification", { title: "Ticker Updated", body: `Ticker ${symbol} updated successfully using price listener` });
  } catch (error: any) {
