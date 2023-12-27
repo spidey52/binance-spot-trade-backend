@@ -1,6 +1,6 @@
 const appSettings = {
- priceListenerLog: true,
- priceListnerPerfLog: true,
+ priceListenerLog: false,
+ priceListnerPerfLog: false,
 };
 
 export default appSettings;

@@ -37,7 +37,9 @@ import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoute
 // import futureTradeStream from "./lib/future.stream";
 import futureTradeStream from "./lib/future.stream";
 import FutureTickerModel from "./models/future/future.ticker.models";
+import FutureTradeModel from "./models/future/future.trade.models";
 import binanceRouter from "./routes/binance.routes";
+import priceListenerRouter from "./routes/price.listener.routes";
 
 const env = process.env.NODE_ENV;
 if (!env) {
@@ -73,6 +75,7 @@ app.use("/orders", orderRoutes);
 app.use("/reports", reportRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/binance", binanceRouter);
+app.use("/price-listeners", priceListenerRouter);
 
 const PORT = process.env.PORT || 9001;
 
