@@ -50,9 +50,9 @@ async function createPriceListener(req: Request, res: Response) {
 async function updatePriceListener(req: Request, res: Response) {
  try {
   const { id } = req.params;
-  const { symbol, price, event, expression, payload } = req.body;
+  const { symbol, active, price, event, expression, payload } = req.body;
 
-  const updatedListener = await PriceListenerModel.findByIdAndUpdate(id, { symbol, price, event, expression, payload }, { new: true });
+  const updatedListener = await PriceListenerModel.findByIdAndUpdate(id, { symbol, price, active, event, expression, payload }, { new: true });
 
   return res.status(200).send(updatedListener);
  } catch (error) {
