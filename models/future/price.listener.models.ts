@@ -18,6 +18,7 @@ const priceListenerSchema = new mongoose.Schema<IPriceListener>(
  {
   symbol: { type: String, required: true },
   price: { type: Number, required: true },
+  active: { type: Boolean, required: true, default: true },
   expression: { type: String, required: true },
   event: { type: String, required: true },
   payload: { type: Object, required: false, default: {} },
