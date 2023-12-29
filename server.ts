@@ -31,13 +31,12 @@ mongoose
   console.log(err.message);
  });
 
+import { handleTelegramNotification } from "./lib/event/notification.event";
+import futureTradeStream from "./lib/future.stream";
 import autoTradeSync from "./lib/trade.sync";
+import FutureTickerModel from "./models/future/future.ticker.models";
 import redisClient, { setFcmToken } from "./redis/redis_conn";
 import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoutes, userRoutes } from "./routes";
-// import futureTradeStream from "./lib/future.stream";
-import futureTradeStream from "./lib/future.stream";
-import FutureTickerModel from "./models/future/future.ticker.models";
-import FutureTradeModel from "./models/future/future.trade.models";
 import binanceRouter from "./routes/binance.routes";
 import priceListenerRouter from "./routes/price.listener.routes";
 
@@ -128,3 +127,5 @@ const setMaxPendingOrders = async () => {
  );
 };
 main();
+
+// handleTelegramNotification({ title: "Server Started", body: "Server started on port 9001" });
