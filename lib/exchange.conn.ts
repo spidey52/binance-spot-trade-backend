@@ -1,6 +1,6 @@
+import ccxt from "ccxt";
 import dotenv from "dotenv";
 dotenv.config();
-import ccxt from "ccxt";
 const apiKey = process.env.API_KEY;
 const secret = process.env.API_SECRET;
 

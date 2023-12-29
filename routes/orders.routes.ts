@@ -1,14 +1,11 @@
 import ccxt from "ccxt";
-import { getOrders, cancelOrder, getOrdersBySymbol } from "../lib/trade.sync";
 import { Request, Response, Router } from "express";
 import { handleInternalError } from "../error/error.handler";
-import OrdersModel from "../models/orders.models";
-import FutureTradeModel from "../models/future/future.trade.models";
-import TickerModel from "../models/ticker.models";
-import TradeModel from "../models/trades.models";
+import { cancelOrder, getOrdersBySymbol } from "../lib/trade.sync";
 import { futureExchange } from "../lib/utils/order.future";
 import FutureTickerModel from "../models/future/future.ticker.models";
-import axios from "axios";
+import FutureTradeModel from "../models/future/future.trade.models";
+import OrdersModel from "../models/orders.models";
 
 const router = Router();
 
