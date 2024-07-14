@@ -31,7 +31,7 @@ mongoose
   console.log(err.message);
  });
 
-import { handleTelegramNotification } from "./lib/event/notification.event";
+import myenv from "./config/myenv.config";
 import futureTradeStream from "./lib/future.stream";
 import autoTradeSync from "./lib/trade.sync";
 import FutureTickerModel from "./models/future/future.ticker.models";
@@ -40,12 +40,7 @@ import { notificationRoutes, orderRoutes, reportRoutes, tickerRoutes, tradeRoute
 import binanceRouter from "./routes/binance.routes";
 import priceListenerRouter from "./routes/price.listener.routes";
 
-const env = process.env.NODE_ENV;
-if (!env) {
- console.log("No environment found");
- process.exit(1);
-}
-if (env === "production") {
+if (myenv.isProdMode) {
  autoTradeSync();
  futureTradeStream();
 }

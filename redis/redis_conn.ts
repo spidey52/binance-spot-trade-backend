@@ -1,12 +1,19 @@
-import { Redis } from "ioredis";
+import { Redis, RedisOptions } from "ioredis";
 import moment from "moment";
 import { WebSocket } from "ws";
+import myenv from "../config/myenv.config";
 import { IPriceListener } from "../models/future/price.listener.models";
 import handlePriceListener from "../price_listener.handler";
 import appSettings from "../settings";
 
-const redisClient = new Redis();
-export const subscriberClient = redisClient.duplicate();
+const config: RedisOptions = {
+ keyPrefix: myenv.SERVER_NAME,
+};
+
+export const redisClient = new Redis(config);
+
+export const sellHandlerClient = new Redis(config);
+export const buyHandlerClient = new Redis(config);
 
 export const getFcmToken = async () => {
  try {

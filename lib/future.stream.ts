@@ -2,6 +2,7 @@ import axios from "axios";
 import WebSocket from "ws";
 import FutureTickerModel from "../models/future/future.ticker.models";
 import FutureTradeModel from "../models/future/future.trade.models";
+import redisClient, { buyHandlerClient } from "../redis/redis_conn";
 import notificationEvent from "./event/notification.event";
 import OrderEvent from "./event/order.event";
 import AsyncQueue from "./utils/myqueue";
@@ -36,9 +37,10 @@ const futureTradeStream = async () => {
  });
 
  ws.on("message", async (data) => {
-  const parsedData = JSON.parse(data.toString());
+  const str = data.toString();
+  const parsedData = JSON.parse(str);
 
-  // console.log(parsedData);
+  await redisClient.lpush("future:stream", str);
 
   try {
    // let flag: any = JSON.parse(data.toString());
@@ -81,26 +83,27 @@ const futureTradeStream = async () => {
      if (trade.S === "BUY") {
       // await buyHandler(trade);
       // const buyQueue = myQueue.get(trade.s) || new AsyncQueue();
-      let buyQueue = myQueue.get(trade.s);
-      if (!buyQueue) {
-       buyQueue = new AsyncQueue();
-       myQueue.set(trade.s, buyQueue);
-      }
+      // let buyQueue = myQueue.get(trade.s);
+      // if (!buyQueue) {
+      //  buyQueue = new AsyncQueue();
+      //  myQueue.set(trade.s, buyQueue);
+      // }
+      // await buyQueue.enqueue(async () => {
+      //  await buyHandler(trade);
+      // });
 
-      await buyQueue.enqueue(async () => {
-       await buyHandler(trade);
-      });
+      await redisClient.lpush("future:buy-stream", JSON.stringify(trade));
      } else if (trade.S === "SELL") {
       // await sellHandler(trade);
-      let sellQueue = myQueue.get(trade.s);
-      if (!sellQueue) {
-       sellQueue = new AsyncQueue();
-       myQueue.set(trade.s, sellQueue);
-      }
-
-      await sellQueue.enqueue(async () => {
-       await sellHandler(trade);
-      });
+      // let sellQueue = myQueue.get(trade.s);
+      // if (!sellQueue) {
+      //  sellQueue = new AsyncQueue();
+      //  myQueue.set(trade.s, sellQueue);
+      // }
+      // await sellQueue.enqueue(async () => {
+      //  await sellHandler(trade);
+      // });
+      await redisClient.lpush("future:sell-stream", JSON.stringify(trade));
      }
     }
    }
@@ -119,6 +122,31 @@ const futureTradeStream = async () => {
   futureTradeStream();
  });
 };
+
+const startBuyHandler = async () => {
+ console.log("Buy Handler started..");
+ while (true) {
+  const stream = await buyHandlerClient.brpop("future:buy-stream", 0);
+  if (!stream) continue;
+  const str = stream[1];
+  const parsedData = JSON.parse(str);
+  await buyHandler(parsedData);
+ }
+};
+
+const startSellHandler = async () => {
+ console.log("Sell Handler started..");
+ while (true) {
+  const stream = await buyHandlerClient.brpop("future:sell-stream", 0);
+  if (!stream) continue;
+  const str = stream[1];
+  const parsedData = JSON.parse(str);
+  await sellHandler(parsedData);
+ }
+};
+
+startBuyHandler();
+startSellHandler();
 
 const buyHandler = async (trade: any) => {
  try {
