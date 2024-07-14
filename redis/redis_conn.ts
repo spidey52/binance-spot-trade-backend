@@ -7,7 +7,7 @@ import handlePriceListener from "../price_listener.handler";
 import appSettings from "../settings";
 
 const config: RedisOptions = {
- keyPrefix: myenv.SERVER_NAME,
+ keyPrefix: `${myenv.SERVER_NAME.toUpperCase()}:`,
 };
 
 export const redisClient = new Redis(config);
