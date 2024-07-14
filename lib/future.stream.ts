@@ -2,7 +2,7 @@ import axios from "axios";
 import WebSocket from "ws";
 import FutureTickerModel from "../models/future/future.ticker.models";
 import FutureTradeModel from "../models/future/future.trade.models";
-import redisClient, { buyHandlerClient } from "../redis/redis_conn";
+import redisClient, { buyHandlerClient, sellHandlerClient } from "../redis/redis_conn";
 import notificationEvent from "./event/notification.event";
 import OrderEvent from "./event/order.event";
 import AsyncQueue from "./utils/myqueue";
@@ -137,7 +137,7 @@ const startBuyHandler = async () => {
 const startSellHandler = async () => {
  console.log("Sell Handler started..");
  while (true) {
-  const stream = await buyHandlerClient.brpop("future:sell-stream", 0);
+  const stream = await sellHandlerClient.brpop("future:sell-stream", 0);
   if (!stream) continue;
   const str = stream[1];
   const parsedData = JSON.parse(str);
