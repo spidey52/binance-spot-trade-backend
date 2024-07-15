@@ -1,4 +1,5 @@
 import { Request, Response, Router } from "express";
+import moment from "moment";
 import { model } from "mongoose";
 import TradeController from "../controllers/trade.controller";
 import FutureTradeModel from "../models/future/future.trade.models";
@@ -110,64 +111,76 @@ router.get("/profit-category", async (req: Request, res: Response) => {
  try {
   const { frequency } = req.query;
 
-  if (frequency === "daily") {
-   const trades = await FutureTradeModel.aggregate([
-    {
-     $match: {
-      sellPrice: { $exists: true },
-     },
-    },
-    {
-     $group: {
-      _id: {
-       sellTime: { $dateToString: { format: "%Y-%m-%d", date: "$sellTime", timezone: "+05:30" } },
-       symbols: "$symbol",
-      },
-      profit: {
-       $sum: {
-        $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
-       },
-      },
+  let format = "%Y-%m-%d";
 
-      count: { $sum: 1 },
-      invested: { $sum: { $multiply: ["$buyPrice", "$quantity"] } },
-     },
-    },
-    {
-     $group: {
-      _id: "$_id.sellTime",
-      totalProfit: { $sum: "$profit" },
-      totalInvested: { $sum: "$invested" },
-      totalTrades: { $sum: "$count" },
-      symbols: {
-       $push: {
-        symbol: "$_id.symbols",
-        profit: "$profit",
-        count: "$count",
-        invested: "$invested",
-       },
-      },
-     },
-    },
-    {
-     $sort: {
-      _id: -1,
-     },
-    },
-    {
-     $project: {
-      _id: 0,
-      date: "$_id",
-      symbols: 1,
-      totalProfit: 1,
-      totalInvested: 1,
-      totalTrades: 1,
-     },
-    },
-   ]);
-
-   return res.status(200).send(trades);
+  if (frequency === "monthly") {
+   format = "%Y-%m";
   }
+
+  if (frequency === "yearly") {
+   format = "%Y";
+  }
+
+  const trades = await FutureTradeModel.aggregate([
+   {
+    $match: {
+     sellPrice: { $exists: true },
+    },
+   },
+   {
+    $group: {
+     _id: {
+      sellTime: { $dateToString: { format: format, date: "$sellTime", timezone: "+05:30" } },
+      symbols: "$symbol",
+     },
+     profit: {
+      $sum: {
+       $multiply: [{ $subtract: ["$sellPrice", "$buyPrice"] }, "$quantity"],
+      },
+     },
+
+     count: { $sum: 1 },
+     invested: { $sum: { $multiply: ["$buyPrice", "$quantity"] } },
+    },
+   },
+   {
+    $group: {
+     _id: "$_id.sellTime",
+     totalProfit: { $sum: "$profit" },
+     totalInvested: { $sum: "$invested" },
+     totalTrades: { $sum: "$count" },
+     symbols: {
+      $push: {
+       symbol: "$_id.symbols",
+       profit: "$profit",
+       count: "$count",
+       invested: "$invested",
+      },
+     },
+    },
+   },
+   {
+    $sort: {
+     _id: -1,
+    },
+   },
+   {
+    $project: {
+     _id: 0,
+     date: "$_id",
+     symbols: 1,
+     totalProfit: 1,
+     totalInvested: 1,
+     totalTrades: 1,
+    },
+   },
+  ]);
+
+  trades.forEach((trade) => {
+   trade.date = moment(trade.date).format("YYYY-MM-DD");
+  });
+
+  return res.status(200).send(trades);
  } catch (error) {
   return handleInternalError(req, res, error);
  }
