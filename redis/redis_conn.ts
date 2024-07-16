@@ -17,30 +17,10 @@ export const buyHandlerClient = new Redis(config);
 
 export const getFcmToken = async () => {
  try {
-  const keys = await redisClient.keys("fcmToken:*");
-  if (!keys.length) return [];
-  const tokens = await redisClient.mget(keys);
-
-  const result: string[] = [];
-
-  for (let token of tokens) {
-   if (token) result.push(token);
-  }
-
-  return result;
+  const tokens: string[] = await redisClient.smembers("fcmToken");
+  return tokens;
  } catch (error) {
-  const token = await redisClient.get("fcmToken");
-  return token ? [token] : [];
- }
-};
-
-export const setFcmToken = async (token: string, prefix?: string) => {
- const fourHour = 60 * 60 * 12;
-
- if (prefix) {
-  await redisClient.set(`fcmToken:${prefix}`, token, "EX", fourHour);
- } else {
-  await redisClient.set("fcmToken", token);
+  return [];
  }
 };
 
