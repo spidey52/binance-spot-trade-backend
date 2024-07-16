@@ -31,6 +31,7 @@ mongoose
   console.log(err.message);
  });
 
+import moment from "moment";
 import myenv from "./config/myenv.config";
 import futureTradeStream from "./lib/future.stream";
 import autoTradeSync from "./lib/trade.sync";
@@ -53,6 +54,9 @@ app.post("/fcm", async (req: Request, res: Response) => {
  try {
   const { token } = req.body;
   await redisClient.sadd("fcmToken", token);
+
+  redisClient.hset("fcmToken", token, moment().format("DD-MM-YYYY HH:mm:ss"));
+
   return res.status(200).send({ message: "Token saved" });
  } catch (error: any) {
   return handleInternalError(req, res, error);
