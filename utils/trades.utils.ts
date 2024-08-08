@@ -4,7 +4,9 @@ import { futureExchange } from "../lib/utils/order.future";
 import FutureTickerModel from "../models/future/future.ticker.models";
 
 export const kPendingTradesFilter = { sellTime: { $exists: false } };
+export const kCompletedTradesFilter = { sellTime: { $exists: true } };
 export const kCalculateInvestment = { $multiply: ["$buyPrice", "$quantity"] };
+export const kCalculateSellPrice = { $multiply: ["$sellPrice", "$quantity"] };
 
 const findOrdersAndCancel = async (symbol: string) => {
  try {

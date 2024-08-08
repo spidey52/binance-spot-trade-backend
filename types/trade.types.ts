@@ -14,3 +14,13 @@ export type GroupedPendingTrades = {
  totalQty: number;
  investment: number;
 };
+
+export type GroupedCompletedTrades = {
+ symbol: string;
+ totalQty: number;
+ tradeCount: number;
+ investment: number;
+ sellPrice: number;
+ profit: number;
+ avgBuyPrice: number;
+};

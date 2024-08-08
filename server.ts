@@ -33,6 +33,7 @@ mongoose
 
 import moment from "moment";
 import myenv from "./config/myenv.config";
+import startCron from "./cron/start.cron";
 import futureTradeStream from "./lib/future.stream";
 import autoTradeSync from "./lib/trade.sync";
 import FutureTickerModel from "./models/future/future.ticker.models";
@@ -229,3 +230,7 @@ const cancelOrder = (orderId: string) => {
   1. consider number of pending orders.. so that we will not run out of balance
   2. consider leverage
 */
+
+if (!myenv.isDevMode) {
+ startCron();
+}

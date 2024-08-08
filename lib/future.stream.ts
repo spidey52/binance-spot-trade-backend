@@ -1,5 +1,6 @@
 import axios from "axios";
 import WebSocket from "ws";
+import myenv from "../config/myenv.config";
 import FutureTickerModel from "../models/future/future.ticker.models";
 import FutureTradeModel from "../models/future/future.trade.models";
 import redisClient, { buyHandlerClient, sellHandlerClient } from "../redis/redis_conn";
@@ -186,7 +187,7 @@ const buyHandler = async (trade: any) => {
   // });
 
   notificationEvent.emit("notification", {
-   title: `New Buy Order Filled for ${symbol}`,
+   title: `New Buy Order Filled for ${symbol} | ${myenv.SERVER_NAME}`,
    body: `Symbol: ${symbol} | Price: ${buyPrice} | Quantity: ${quantity} | Side: BUY | Realized Profit: 0.0`,
   });
  } catch (error: any) {
