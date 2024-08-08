@@ -25,7 +25,7 @@ const getProfitSummary = async () => {
    },
   ]);
 
-  const message = `Today's Profit: ${todayProfit[0]?.profit || 0}`;
+  const message = `Today's Profit: ${todayProfit[0]?.profit?.toFixed(2) || 0}`;
 
   notificationEvent.emit("notification", {
    title: `Profit Summary | ${myenv.SERVER_NAME}`,
