@@ -55,6 +55,7 @@ app.post("/fcm", async (req: Request, res: Response) => {
  try {
   const { token } = req.body;
   await redisClient.sadd("fcmToken", token);
+  if (!token) return res.status(200).send({ message: "Token is required" });
 
   redisClient.hset("fcmToken", token, moment().format("DD-MM-YYYY HH:mm:ss"));
 
