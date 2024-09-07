@@ -1,6 +1,7 @@
 import FutureTickerModel from "../models/future/future.ticker.models";
 import FutureTradeModel from "../models/future/future.trade.models";
 import redisClient from "../redis/redis_conn";
+import notificationEvent from "./event/notification.event";
 import { futureExchange } from "./utils/order.future";
 
 const handleAutoPlaceOrder = async (ticker: string) => {
@@ -26,12 +27,19 @@ const handleAutoPlaceOrder = async (ticker: string) => {
   buyPrice = lastPendingTrade.buyPrice * ((100 - tickerDetails.buyPercent) / 100);
  }
 
- const currentPrice = redisClient.hget("satyam-coins", ticker);
+ const currentPrice: string | null = await redisClient.hget("satyam-coins", ticker);
  if (!currentPrice) return;
 
  buyPrice = Math.min(buyPrice, +currentPrice);
 
- await futureExchange.createLimitBuyOrder(tickerDetails.symbol, tickerDetails.amount, buyPrice);
+ try {
+  await futureExchange.createLimitBuyOrder(tickerDetails.symbol, tickerDetails.amount, buyPrice);
+ } catch (error: any) {
+  notificationEvent.emit("notification", {
+   title: `Failed to create limit buy order for ${ticker}.. Auto Place Order`,
+   body: error.message,
+  });
+ }
 };
 
 export default handleAutoPlaceOrder;
