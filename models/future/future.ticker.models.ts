@@ -1,5 +1,10 @@
 import { Schema, model } from "mongoose";
 
+export enum OrderStrategy {
+ GRID_ORDRER = "GRID_ORDER",
+ AUTO_ORDER = "AUTO_ORDER",
+}
+
 const tickerSchema = new Schema(
  {
   symbol: { type: String, required: true, unique: true },
@@ -12,6 +17,13 @@ const tickerSchema = new Schema(
   maxPendingOrders: { type: Number, required: true, default: 10 },
   precision: { type: Number, required: true, default: 4 },
   ignoreStream: { type: Boolean, required: true, default: false }, // we can use it as inactive ticker
+  strategy: {
+   type: String,
+   required: true,
+   enum: Object.values(OrderStrategy),
+   default: OrderStrategy.GRID_ORDRER,
+  },
+  roc: { type: Boolean, required: true, default: false, description: "cancel and place order on config update" },
  },
  {
   timestamps: true,
