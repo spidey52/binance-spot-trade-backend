@@ -13,6 +13,12 @@ const handleAutoPlaceOrder = async (ticker: string) => {
   try {
    const pendingOrders = await futureExchange.fetchOpenOrders(ticker);
    const buyOrders: string[] = pendingOrders.filter((order) => order.side === "buy").map((order) => order.id);
+
+   notificationEvent.emit("notification", {
+    title: `Found ${buyOrders.length} open orders for ${ticker}.. Auto Place Order`,
+    body: JSON.stringify(buyOrders),
+   });
+
    if (buyOrders.length) {
     const result = await Promise.allSettled(buyOrders.map((orderId) => futureExchange.cancelOrder(orderId, ticker)));
 
