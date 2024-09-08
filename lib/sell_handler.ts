@@ -38,6 +38,14 @@ const sellHandler = async (trade: any) => {
 
   if (futureTicker && futureTicker.strategy === OrderStrategy.AUTO_ORDER) {
    await handleAutoPlaceOrder(symbol);
+
+   const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
+
+   notificationEvent.emit("notification", {
+    title: `New Sell Order Filled for ${symbol}`,
+    body: `Symbol: ${symbol} | Price: ${sellPrice} | Quantity: ${quantity} | Side: SELL | Realized Profit: ${profit.toFixed(2)}`,
+   });
+
    return;
   }
 
