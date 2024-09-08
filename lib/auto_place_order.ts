@@ -49,7 +49,13 @@ const handleAutoPlaceOrder = async (ticker: string) => {
    });
   }
 
-  if (tickerDetails.rob === false) return;
+  if (tickerDetails.rob === false) {
+   notificationEvent.emit("notification", {
+    title: `ROB is disabled for ${ticker}.. Auto Place Order`,
+    body: `Symbol: ${ticker}`,
+   });
+   return;
+  }
 
   const lastPendingTrade = await FutureTradeModel.findOne({ symbol: ticker, sellPrice: { $exists: false } }).sort({
    buyTime: -1,
@@ -61,12 +67,25 @@ const handleAutoPlaceOrder = async (ticker: string) => {
   }
 
   const currentPrice: string | null = await redisClient.hget("satyam-coins", ticker);
-  if (!currentPrice) return;
+
+  if (!currentPrice) {
+   notificationEvent.emit("notification", {
+    title: `Price not found for ${ticker}.. Auto Place Order`,
+    body: `Symbol: ${ticker}`,
+   });
+
+   return;
+  }
 
   buyPrice = Math.min(buyPrice, +currentPrice);
 
   // console.log("Auto Place Order", ticker, buyPrice);
   await futureExchange.createLimitBuyOrder(tickerDetails.symbol, tickerDetails.amount, buyPrice);
+
+  notificationEvent.emit("notification", {
+   title: `Auto Place Order for ${ticker}..`,
+   body: `Symbol: ${ticker} | Price: ${buyPrice} | Quantity: ${tickerDetails.amount}`,
+  });
  } catch (error: any) {
   notificationEvent.emit("notification", {
    title: `Failed to create limit buy order for ${ticker}.. Auto Place Order`,
