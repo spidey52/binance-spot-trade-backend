@@ -8,7 +8,11 @@ const handleAutoPlaceOrder = async (ticker: string) => {
  // cancel all order and place new order
  try {
   const tickerDetails = await FutureTickerModel.findOne({ symbol: ticker });
-  if (!tickerDetails) return;
+  if (!tickerDetails)
+   return {
+    title: `Ticker not found for ${ticker}.. Auto Place Order`,
+    body: `Symbol: ${ticker}`,
+   };
 
   try {
    const pendingOrders = await futureExchange.fetchOpenOrders(ticker);

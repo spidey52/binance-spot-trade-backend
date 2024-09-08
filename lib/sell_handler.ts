@@ -42,7 +42,7 @@ const sellHandler = async (trade: any) => {
    const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
 
    notificationEvent.emit("notification", {
-    title: `New Sell Order Filled for ${symbol}`,
+    title: `New Sell Order Filled for ${symbol} | Auto Order`,
     body: `Symbol: ${symbol} | Price: ${sellPrice} | Quantity: ${quantity} | Side: SELL | Realized Profit: ${profit.toFixed(2)}`,
    });
 
