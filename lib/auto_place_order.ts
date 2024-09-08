@@ -14,10 +14,26 @@ const handleAutoPlaceOrder = async (ticker: string) => {
    const pendingOrders = await futureExchange.fetchOpenOrders(ticker);
    const buyOrders: string[] = pendingOrders.filter((order) => order.side === "buy").map((order) => order.id);
    if (buyOrders.length) {
-    await Promise.allSettled(buyOrders.map((orderId) => futureExchange.cancelOrder(orderId, ticker)));
+    const result = await Promise.allSettled(buyOrders.map((orderId) => futureExchange.cancelOrder(orderId, ticker)));
+
+    const rejected = result.filter((r) => r.status === "rejected");
+    const fulfilled = result.filter((r) => r.status === "fulfilled");
+    if (rejected.length) {
+     notificationEvent.emit("notification", {
+      title: `Failed to cancel open orders for ${ticker}.. Auto Place Order`,
+      body: JSON.stringify(rejected),
+     });
+    }
+
+    if (fulfilled.length) {
+     notificationEvent.emit("notification", {
+      title: `Canceled ${fulfilled.length} open orders for ${ticker}.. Auto Place Order`,
+      body: JSON.stringify(fulfilled),
+     });
+    }
    }
   } catch (error: any) {
-   return notificationEvent.emit("notification", {
+   notificationEvent.emit("notification", {
     title: `Failed to fetch open orders for ${ticker}.. Auto Place Order`,
     body: error.message + " | " + JSON.stringify(error),
    });
