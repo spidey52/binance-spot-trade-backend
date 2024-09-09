@@ -237,6 +237,9 @@ if (!myenv.isDevMode) {
  startCron();
 }
 
-setInterval(() => {
- handleAutoPlaceOrder("SOLUSDT");
-}, 1000 * 60);
+let autoHandler = process.env.AUTO_HANDLER;
+if (autoHandler) {
+ setInterval(() => {
+  handleAutoPlaceOrder("SOLUSDT");
+ }, +autoHandler * 60);
+}
