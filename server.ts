@@ -34,6 +34,7 @@ mongoose
 import moment from "moment";
 import myenv from "./config/myenv.config";
 import startCron from "./cron/start.cron";
+import handleAutoPlaceOrder from "./lib/auto_place_order";
 import futureTradeStream from "./lib/future.stream";
 import autoTradeSync from "./lib/trade.sync";
 import FutureTickerModel from "./models/future/future.ticker.models";
@@ -235,3 +236,7 @@ const cancelOrder = (orderId: string) => {
 if (!myenv.isDevMode) {
  startCron();
 }
+
+setInterval(() => {
+ handleAutoPlaceOrder("SOLUSDT");
+}, 1000 * 60);
