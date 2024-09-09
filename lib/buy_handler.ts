@@ -24,7 +24,20 @@ const buyHandler = async (trade: any) => {
   const sellPrice = buyPrice * ((100 + ticker.sellPercent) / 100);
   await futureExchange.createLimitSellOrder(symbol, quantity, sellPrice);
 
-  if (ticker.strategy === OrderStrategy.AUTO_ORDER) await handleAutoPlaceOrder(symbol);
+  if (ticker.strategy === OrderStrategy.AUTO_ORDER) {
+   await handleAutoPlaceOrder(symbol);
+   return;
+  } else {
+   let body = `Symbol: ${symbol} | Price: ${buyPrice} | Quantity: ${quantity} | Side: BUY | Realized Profit: 0.0\n`;
+
+   body += JSON.stringify(trade, null, 2);
+
+   notificationEvent.emit("notification", {
+    title: `strategy is not AUTO_ORDER for ${symbol} | ${myenv.SERVER_NAME}`,
+
+    body,
+   });
+  }
 
   notificationEvent.emit("notification", {
    title: `New Buy Order Filled for ${symbol} | ${myenv.SERVER_NAME}`,
