@@ -18,16 +18,16 @@ const handleAutoPlaceOrder = async (ticker: string) => {
    const pendingOrders = await futureExchange.fetchOpenOrders(ticker);
    const buyOrders: string[] = pendingOrders.filter((order) => order.side === "buy").map((order) => order.id);
 
-   notificationEvent.emit("notification", {
-    title: `Found ${buyOrders.length} open orders for ${ticker}.. Auto Place Order`,
-    body: JSON.stringify(buyOrders),
-   });
+   //  notificationEvent.emit("notification", {
+   //   title: `Found ${buyOrders.length} open orders for ${ticker}.. Auto Place Order`,
+   //   body: JSON.stringify(buyOrders),
+   //  });
 
    if (buyOrders.length) {
     const result = await Promise.allSettled(buyOrders.map((orderId) => futureExchange.cancelOrder(orderId, ticker)));
 
     const rejected = result.filter((r) => r.status === "rejected");
-    const fulfilled = result.filter((r) => r.status === "fulfilled");
+    // const fulfilled = result.filter((r) => r.status === "fulfilled");
     if (rejected.length) {
      notificationEvent.emit("notification", {
       title: `Failed to cancel open orders for ${ticker}.. Auto Place Order`,
@@ -35,12 +35,12 @@ const handleAutoPlaceOrder = async (ticker: string) => {
      });
     }
 
-    if (fulfilled.length) {
-     notificationEvent.emit("notification", {
-      title: `Canceled ${fulfilled.length} open orders for ${ticker}.. Auto Place Order`,
-      body: JSON.stringify(fulfilled),
-     });
-    }
+    // if (fulfilled.length) {
+    //  notificationEvent.emit("notification", {
+    //   title: `Canceled ${fulfilled.length} open orders for ${ticker}.. Auto Place Order`,
+    //   body: JSON.stringify(fulfilled),
+    //  });
+    // }
    }
   } catch (error: any) {
    notificationEvent.emit("notification", {
