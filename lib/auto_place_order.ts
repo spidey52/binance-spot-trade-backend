@@ -82,10 +82,10 @@ const handleAutoPlaceOrder = async (ticker: string) => {
   // console.log("Auto Place Order", ticker, buyPrice);
   await futureExchange.createLimitBuyOrder(tickerDetails.symbol, tickerDetails.amount, buyPrice);
 
-  notificationEvent.emit("notification", {
-   title: `Auto Place Order for ${ticker}..`,
-   body: `Symbol: ${ticker} | Price: ${buyPrice} | Quantity: ${tickerDetails.amount}`,
-  });
+  // notificationEvent.emit("notification", {
+  //  title: `Auto Place Order for ${ticker}..`,
+  //  body: `Symbol: ${ticker} | Price: ${buyPrice} | Quantity: ${tickerDetails.amount}`,
+  // });
  } catch (error: any) {
   notificationEvent.emit("notification", {
    title: `Failed to create limit buy order for ${ticker}.. Auto Place Order`,
