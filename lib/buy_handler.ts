@@ -26,6 +26,12 @@ const buyHandler = async (trade: any) => {
 
   if (ticker.strategy === OrderStrategy.AUTO_ORDER) {
    await handleAutoPlaceOrder(symbol);
+
+   notificationEvent.emit("notification", {
+    title: `New Buy Order Filled for ${symbol} | Auto Order`,
+    body: `Symbol: ${symbol} | Price: ${buyPrice} | Quantity: ${quantity} | Side: BUY | Realized Profit: 0.0`,
+   });
+
    return;
   } else {
    let body = `Symbol: ${symbol} | Price: ${buyPrice} | Quantity: ${quantity} | Side: BUY | Realized Profit: 0.0\n`;
