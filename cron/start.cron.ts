@@ -3,6 +3,8 @@ import cron from "node-cron";
 import myenv from "../config/myenv.config";
 import notificationEvent from "../lib/event/notification.event";
 import FutureTradeModel from "../models/future/future.trade.models";
+import redisClient from "../redis/redis_conn";
+import RedisKey from "../redis/redis_key";
 
 const getProfitSummary = async () => {
  try {
@@ -24,6 +26,13 @@ const getProfitSummary = async () => {
     },
    },
   ]);
+
+  const profit = todayProfit[0]?.profit?.toFixed(2) || 0;
+
+  const lastProfit = await redisClient.get(RedisKey.LAST_PROFIT);
+  if (lastProfit == profit) return;
+
+  await redisClient.set(RedisKey.LAST_PROFIT, profit);
 
   const message = `Today's Profit: ${todayProfit[0]?.profit?.toFixed(2) || 0}`;
 
