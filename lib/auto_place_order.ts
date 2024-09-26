@@ -4,8 +4,14 @@ import redisClient from "../redis/redis_conn";
 import notificationEvent from "./event/notification.event";
 import { futureExchange } from "./utils/order.future";
 
-const handleAutoPlaceOrder = async (ticker: string) => {
+const handleAutoPlaceOrder = async (
+ ticker: string,
+ config: {
+  side: "buy" | "sell";
+ }
+) => {
  // cancel all order and place new order
+
  try {
   const tickerDetails = await FutureTickerModel.findOne({ symbol: ticker });
   if (!tickerDetails)
@@ -14,33 +20,50 @@ const handleAutoPlaceOrder = async (ticker: string) => {
     body: `Symbol: ${ticker}`,
    };
 
+  // check if max  pending orders crosses the limit
+  const pendingOrders = await redisClient.hget("pending-orders", ticker);
+
+  if (pendingOrders && +pendingOrders >= tickerDetails.maxPendingOrders) {
+   notificationEvent.emit("notification", {
+    title: `Max Pending Orders Limit Reached for ${ticker}.. Auto Place Order`,
+    body: `Symbol: ${ticker} | Pending Orders: ${pendingOrders}`,
+   });
+
+   return;
+  }
+
+  if (config.side === "buy" && tickerDetails.rob === false) {
+   notificationEvent.emit("notification", {
+    title: `ROB is disabled for ${ticker}.. Auto Place Order`,
+    body: `Symbol ${ticker}`,
+   });
+
+   return;
+  }
+
+  if (config.side === "sell" && tickerDetails.ros === false) {
+   notificationEvent.emit("notification", {
+    title: `ROS is disabled for ${ticker}.. Auto Place Order`,
+    body: `Symbol ${ticker}`,
+   });
+
+   return;
+  }
+
   try {
    const pendingOrders = await futureExchange.fetchOpenOrders(ticker);
    const buyOrders: string[] = pendingOrders.filter((order) => order.side === "buy").map((order) => order.id);
-
-   //  notificationEvent.emit("notification", {
-   //   title: `Found ${buyOrders.length} open orders for ${ticker}.. Auto Place Order`,
-   //   body: JSON.stringify(buyOrders),
-   //  });
 
    if (buyOrders.length) {
     const result = await Promise.allSettled(buyOrders.map((orderId) => futureExchange.cancelOrder(orderId, ticker)));
 
     const rejected = result.filter((r) => r.status === "rejected");
-    // const fulfilled = result.filter((r) => r.status === "fulfilled");
     if (rejected.length) {
      notificationEvent.emit("notification", {
       title: `Failed to cancel open orders for ${ticker}.. Auto Place Order`,
       body: JSON.stringify(rejected),
      });
     }
-
-    // if (fulfilled.length) {
-    //  notificationEvent.emit("notification", {
-    //   title: `Canceled ${fulfilled.length} open orders for ${ticker}.. Auto Place Order`,
-    //   body: JSON.stringify(fulfilled),
-    //  });
-    // }
    }
   } catch (error: any) {
    notificationEvent.emit("notification", {

@@ -37,7 +37,9 @@ const sellHandler = async (trade: any) => {
   const futureTicker = await FutureTickerModel.findOne({ symbol }).lean();
 
   if (futureTicker && futureTicker.strategy === OrderStrategy.AUTO_ORDER) {
-   await handleAutoPlaceOrder(symbol);
+   await handleAutoPlaceOrder(symbol, {
+    side: "sell",
+   });
 
    const profit = (sellPrice - minValueTrade.buyPrice) * minValueTrade.quantity;
 

@@ -25,7 +25,7 @@ const buyHandler = async (trade: any) => {
   await futureExchange.createLimitSellOrder(symbol, quantity, sellPrice);
 
   if (ticker.strategy === OrderStrategy.AUTO_ORDER) {
-   await handleAutoPlaceOrder(symbol);
+   await handleAutoPlaceOrder(symbol, { side: "buy" });
 
    notificationEvent.emit("notification", {
     title: `New Buy Order Filled for ${symbol} | Auto Order`,

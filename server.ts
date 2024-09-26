@@ -127,112 +127,6 @@ const setMaxPendingOrders = async () => {
 };
 main();
 
-// handleTelegramNotification({ title: "Server Started", body: "Server started on port 9001" });
-
-//  simulate a trading platform
-
-type Balance = {
- total: number;
- available: number;
- inOrder: number;
-};
-
-type Leverage = {
- symbol: string;
- leverage: number;
-};
-
-type Order = {
- orderId: string;
- symbol: string;
- side: "BUY" | "SELL";
- price: number;
- quantity: number;
-};
-
-type Position = {
- symbol: string;
- entryPrice: number;
- quantity: number;
-};
-
-type Trade = {
- symbol: string;
- buyPrice: number;
- sellPrice: number;
- profit: number;
- quantity: number;
-};
-
-const initialBalance: Balance = {
- total: 1000,
- available: 1000,
- inOrder: 0,
-};
-
-const initialLeverage: Leverage = {
- symbol: "BTCUSDT",
- leverage: 4,
-};
-
-const initialPosition: Position = {
- symbol: "BTCUSDT",
- entryPrice: 60000,
- quantity: 0.002,
-};
-
-const initialTrade: Trade = {
- symbol: "BTCUSDT",
- buyPrice: 40000,
- sellPrice: 41000,
- profit: 100,
- quantity: 0.1,
-};
-
-const balance: Balance = { ...initialBalance };
-const leverage: Leverage = { ...initialLeverage };
-const position: Position = { ...initialPosition };
-
-const orders: Order[] = [];
-const trades: Trade[] = [];
-
-const isSellOrderAllowed = (symbol: string, quantity: number) => {
- const currSellQty = orders.reduce((acc, order) => {
-  if (order.side === "SELL") {
-   acc += order.quantity;
-  }
-  return acc;
- }, 0);
-
- const availableToSell = position.quantity - currSellQty;
-
- if (availableToSell < quantity) return false;
-
- return true;
-};
-
-const createOrder = (order: Order) => {
- if (order.side === "SELL") {
-  const isAllowed = isSellOrderAllowed(order.symbol, order.quantity);
-  if (!isAllowed) return;
- }
-
- orders.push(order);
- if (order.side === "BUY") {
-  balance.available -= order.price * order.quantity;
-  balance.inOrder += order.price * order.quantity;
- }
-};
-
-const cancelOrder = (orderId: string) => {
- const order = orders.findIndex((order) => order.orderId === orderId);
-};
-
-/*
-  1. consider number of pending orders.. so that we will not run out of balance
-  2. consider leverage
-*/
-
 if (!myenv.isDevMode) {
  startCron();
 }
@@ -240,6 +134,6 @@ if (!myenv.isDevMode) {
 let autoHandler = process.env.AUTO_HANDLER;
 if (autoHandler) {
  setInterval(() => {
-  handleAutoPlaceOrder("SOLUSDT");
+  handleAutoPlaceOrder("SOLUSDT", { side: "buy" });
  }, +autoHandler * 60);
 }

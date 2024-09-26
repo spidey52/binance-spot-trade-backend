@@ -28,10 +28,14 @@ async function fetchPriceListeners(req: Request, res: Response) {
 
   if (active) searchQuery.active = active === "true";
 
-  const listners = await PriceListenerModel.find(searchQuery);
-  const listnersCount = await PriceListenerModel.countDocuments(searchQuery);
+  const listners = await PriceListenerModel.find(searchQuery).sort({
+   symbol: 1,
+   price: 1,
+  });
 
-  return res.status(200).send({ data: listners, count: listnersCount });
+  // const listnersCount = await PriceListenerModel.countDocuments(searchQuery);
+
+  return res.status(200).send({ data: listners, count: listners.length });
  } catch (error) {
   return handleInternalError(req, res, error);
  }
