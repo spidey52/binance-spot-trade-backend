@@ -12,7 +12,12 @@ priceListenerEmitter.on("TICKER_EDIT", async ({ listener }: { listener: IPriceLi
   await PriceListenerModel.findByIdAndUpdate(listenerId, { active: false });
   await FutureTickerModel.findOneAndUpdate({ symbol }, payload);
 
-  notificationEvent.emit("notification", { title: "Ticker Updated", body: `Ticker ${symbol} updated successfully using price listener` });
+  // notificationEvent.emit("notification", { title: "Ticker Updated", body: `Ticker ${symbol} updated successfully using price listener` });
+
+  notificationEvent.emit("notification", {
+   title: `${symbol} updated successfully using price listener`,
+   body: `changes are <blockquote>${JSON.stringify(payload, null, 2)}</blockquote>`,
+  });
  } catch (error: any) {
   console.log(error.message);
  }

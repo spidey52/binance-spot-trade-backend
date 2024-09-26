@@ -1,49 +1,22 @@
 import ccxt from "ccxt";
 import { Request, Response, Router } from "express";
 import { handleInternalError } from "../error/error.handler";
-import { cancelOrder, getOrdersBySymbol } from "../lib/trade.sync";
+import { cancelOrder } from "../lib/trade.sync";
 import { futureExchange } from "../lib/utils/order.future";
 import FutureTickerModel from "../models/future/future.ticker.models";
 import FutureTradeModel from "../models/future/future.trade.models";
-import OrdersModel from "../models/orders.models";
 
 const router = Router();
-
-router.get("/", async (req, res) => {
- try {
-  const { symbol, side, status } = req.query;
-  const searchQuery: any = {};
-  if (symbol) searchQuery.symbol = symbol;
-  if (side) searchQuery.side = side;
-  if (status) searchQuery.status = status;
-  else searchQuery.status = "NEW";
-
-  const orders = await OrdersModel.find(searchQuery);
-
-  return res.status(200).send(orders);
- } catch (error) {
-  handleInternalError(req, res, error);
- }
-});
 
 router.get("/future", async (req, res) => {
  const { symbol } = req.query;
  try {
-  const ticker = await FutureTickerModel.findOne({
-   symbol: {
-    $regex: symbol || "",
-    $options: "i",
-   },
-  });
-
+  const ticker = await FutureTickerModel.findOne({ symbol: { $regex: symbol || "", $options: "i" } });
   if (!ticker) return res.status(400).send({ message: "Ticker not found" });
 
   const orders = await futureExchange.fetchOpenOrders(ticker.symbol);
 
-  const initialState: { buy: any[]; sell: any[] } = {
-   buy: [],
-   sell: [],
-  };
+  const initialState: { buy: any[]; sell: any[] } = { buy: [], sell: [] };
 
   const response = orders
    .map((o) => ({
@@ -91,24 +64,16 @@ router.post("/future/replace-all", async (req, res) => {
 
   const pendingTrades = await FutureTradeModel.find({ symbol, sellPrice: { $exists: false } });
 
-  // const sellOrderPrice = pendingTrades
-  //  .map((el) => {
-  //   if (!el.buyPrice) return 0;
-  //   return el.buyPrice * (1 + ticker.sellPercent / 100);
-  //  })
-  //  .filter((el) => el !== 0);
+  const promises = pendingTrades
+   .filter(async (trade) => {
+    if (!trade.buyPrice || !trade.quantity) return false;
+    return true;
+   })
+   .map((el) => {
+    return futureExchange.createLimitOrder(symbol, "sell", el.quantity, el.buyPrice * (1 + ticker.sellPercent / 100));
+   });
 
-  // for (let orderPrice of sellOrderPrice) {
-  //  if (!ticker.amount) return res.status(400).send({ message: "Ticker amount not found" });
-  //  await futureExchange.createLimitOrder(symbol, "sell", ticker.amount, orderPrice);
-  // }
-
-  for (let trade of pendingTrades) {
-   if (!trade.buyPrice) return res.status(400).send({ message: "Ticker buy price not found" });
-   if (!trade.quantity) return res.status(400).send({ message: "Ticker quantity not found" });
-
-   await futureExchange.createLimitOrder(symbol, "sell", trade.quantity, trade.buyPrice * (1 + ticker.sellPercent / 100));
-  }
+  await Promise.allSettled(promises);
 
   return res.status(200).send({ message: "order placed succesfully" });
  } catch (error) {
@@ -190,11 +155,11 @@ router.get("/:id/cancel", async (req: Request, res: Response) => {
  }
 });
 
-router.get("/:id", async (req: Request, res: Response) => {
+router.post("/:id/update", async (req: Request, res: Response) => {
  try {
   const { id } = req.params;
-  const { symbol } = req.query;
-  const order = await getOrdersBySymbol(symbol as string);
+  const { price, amount } = req.body;
+  const order = await futureExchange.updateOrder(id, price, amount);
   return res.status(200).send(order);
  } catch (error) {
   handleInternalError(req, res, error);
