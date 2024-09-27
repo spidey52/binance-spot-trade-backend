@@ -167,8 +167,10 @@ router.post("/:id/update", async (req: Request, res: Response) => {
    side,
   } = req.body as { price: number; amount: number; type: string; symbol: string; side: "buy" | "sell" };
 
-  const order = await futureExchange.editOrder(id, symbol, type, side, amount, price);
-  return res.status(200).send(order);
+  await futureExchange.cancelOrder(id, symbol);
+  await futureExchange.createLimitOrder(symbol, side, amount, price);
+
+  return res.status(200).send({ message: "order updated succesfully" });
  } catch (error) {
   handleInternalError(req, res, error);
  }
