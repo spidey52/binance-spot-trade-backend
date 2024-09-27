@@ -158,8 +158,16 @@ router.get("/:id/cancel", async (req: Request, res: Response) => {
 router.post("/:id/update", async (req: Request, res: Response) => {
  try {
   const { id } = req.params;
-  const { price, amount } = req.body;
-  const order = await futureExchange.updateOrder(id, price, amount);
+  const {
+   price,
+   amount,
+
+   type,
+   symbol,
+   side,
+  } = req.body as { price: number; amount: number; type: string; symbol: string; side: "buy" | "sell" };
+
+  const order = await futureExchange.editOrder(id, symbol, type, side, amount, price);
   return res.status(200).send(order);
  } catch (error) {
   handleInternalError(req, res, error);
