@@ -1,10 +1,9 @@
-import { handleBuyNotification, handleSellNotification } from "./utils/notificationHandler";
-import { createBuyOrder, findPendingOrderByPrice, getTickerDetails } from "./utils/orders.utils";
-import { getBuyPrice, getSellPrice } from "./utils/getPercent";
+import OrdersModel from "../models/orders.models";
 import TradeModel from "../models/trades.models";
 import exchange from "./exchange.conn";
-import OrdersModel from "../models/orders.models";
-import TickerModel from "../models/ticker.models";
+import { getBuyPrice, getSellPrice } from "./utils/getPercent";
+import { handleBuyNotification, handleSellNotification } from "./utils/notificationHandler";
+import { createBuyOrder, findPendingOrderByPrice, getTickerDetails } from "./utils/orders.utils";
 
 const findMinValueTrade = async (symbol: string, quantity: number) => {
  const trade = await TradeModel.findOne({
@@ -71,7 +70,7 @@ const parseBinanaceSpotStream = async (data: any) => {
      buyTime: new Date().getTime(),
     });
 
-    await exchange.createLimitSellOrder(symbol, quantity, getSellPrice(price, sellOrderPercent));
+    await exchange.createLimitSellOrder(symbol, quantity, +getSellPrice(price, sellOrderPercent).toFixed(precision));
     await handleBuyNotification({ symbol, price });
 
     if (loopEnabled === false) return;
@@ -94,7 +93,7 @@ const parseBinanaceSpotStream = async (data: any) => {
     console.log("New order starting", symbol, quantity, updatedTrade.buyPrice, "line number 63");
     const isExists = await findPendingOrderByPrice(symbol, updatedTrade.buyPrice || price);
     if (isExists) return;
-    await exchange.createLimitBuyOrder(symbol, quantity, updatedTrade?.buyPrice || price);
+    await exchange.createLimitBuyOrder(symbol, quantity, +(updatedTrade?.buyPrice || price).toFixed(precision));
     console.log("New order created", symbol, quantity, updatedTrade?.buyPrice, "line number 65");
     const profit = (price - (updatedTrade?.buyPrice || price)) * quantity;
     await handleSellNotification({

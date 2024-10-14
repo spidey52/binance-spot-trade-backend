@@ -53,16 +53,6 @@ router.patch("/future/:id", async (req, res) => {
  }
 });
 
-router.patch("/:id", async (req: Request, res: Response) => {
- try {
-  const { id } = req.params;
-  const updatedTicker = await TickerModel.findByIdAndUpdate(id, { ...req.body }, { new: true });
-  return res.status(200).send(updatedTicker);
- } catch (error) {
-  handleInternalError(req, res, error);
- }
-});
-
 router.delete("/:id", async (req, res) => {
  try {
   const { id } = req.params;

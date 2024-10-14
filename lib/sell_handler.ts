@@ -51,7 +51,7 @@ const sellHandler = async (trade: any) => {
    return;
   }
 
-  await futureExchange.createLimitBuyOrder(symbol, quantity, minValueTrade.buyPrice);
+  await futureExchange.createLimitBuyOrder(symbol, quantity, +minValueTrade.buyPrice.toFixed(futureTicker?.precision || 4));
 
   // TODO: not know what is this for
   const nextPrice = minValueTrade.buyPrice * ((100 + (futureTicker?.buyPercent || 2) * 2) / 100);
@@ -60,7 +60,7 @@ const sellHandler = async (trade: any) => {
 
   if (!isSellPositionExists) {
    if (futureTicker && futureTicker.oomp && futureTicker.amount) {
-    await futureExchange.createLimitBuyOrder(symbol, futureTicker.amount, sellPrice);
+    await futureExchange.createLimitBuyOrder(symbol, futureTicker.amount, +sellPrice.toFixed(futureTicker.precision || 4));
    }
   }
 

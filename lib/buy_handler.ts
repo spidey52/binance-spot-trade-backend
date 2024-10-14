@@ -22,7 +22,7 @@ const buyHandler = async (trade: any) => {
   });
 
   const sellPrice = buyPrice * ((100 + ticker.sellPercent) / 100);
-  await futureExchange.createLimitSellOrder(symbol, quantity, sellPrice);
+  await futureExchange.createLimitSellOrder(symbol, quantity, +sellPrice.toFixed(ticker.precision));
 
   if (ticker.strategy === OrderStrategy.AUTO_ORDER) {
    await handleAutoPlaceOrder(symbol, { side: "buy" });

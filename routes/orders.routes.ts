@@ -121,7 +121,7 @@ router.post("/grid", async (req: Request, res: Response) => {
 
     try {
      console.log(price, amount, symbol);
-     await exchange.createLimitSellOrder(symbol, amount, price);
+     await exchange.createLimitSellOrder(symbol, amount, +price.toFixed(2));
     } catch (error: any) {
      console.log(error.message);
     }
@@ -129,7 +129,7 @@ router.post("/grid", async (req: Request, res: Response) => {
     const price = +(initialPrice * (1 - (percent / 100) * i)).toFixed(precision);
     try {
      console.log(price, amount, symbol);
-     await exchange.createLimitBuyOrder(symbol, amount, price);
+     await exchange.createLimitBuyOrder(symbol, amount, +price.toFixed(precision));
     } catch (error: any) {
      console.log(error.message);
     }
@@ -158,17 +158,10 @@ router.get("/:id/cancel", async (req: Request, res: Response) => {
 router.post("/:id/update", async (req: Request, res: Response) => {
  try {
   const { id } = req.params;
-  const {
-   price,
-   amount,
-
-   type,
-   symbol,
-   side,
-  } = req.body as { price: number; amount: number; type: string; symbol: string; side: "buy" | "sell" };
+  const { price, quantity, symbol, side } = req.body as { price: number; quantity: number; symbol: string; side: "buy" | "sell" };
 
   await futureExchange.cancelOrder(id, symbol);
-  await futureExchange.createLimitOrder(symbol, side, amount, price);
+  await futureExchange.createLimitOrder(symbol, side, quantity, price);
 
   return res.status(200).send({ message: "order updated succesfully" });
  } catch (error) {

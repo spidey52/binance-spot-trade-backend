@@ -100,7 +100,7 @@ const handleAutoPlaceOrder = async (
    return;
   }
 
-  buyPrice = Math.min(buyPrice, +currentPrice);
+  buyPrice = +Math.min(buyPrice, +currentPrice).toFixed(tickerDetails.precision);
 
   // console.log("Auto Place Order", ticker, buyPrice);
   await futureExchange.createLimitBuyOrder(tickerDetails.symbol, tickerDetails.amount, buyPrice);
