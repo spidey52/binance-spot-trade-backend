@@ -27,14 +27,25 @@ export const getFcmToken = async () => {
 const priceListeners: IPriceListener[] = [];
 
 const initializeTickerSocket = () => {
- const socket = new WebSocket("wss://stream.binance.com:9443/ws/!miniTicker@arr");
+ const socket = new WebSocket("wss://fstream.binance.com/stream?streams=!markPrice@arr@1s");
+
  socket.on("message", async (data: any) => {
-  const jsonData = JSON.parse(data.toString());
+  const jsonData = JSON.parse(data.toString()) as {
+   stream: "!markPrice@arr@1s";
+   data: {
+    s: string;
+    p: string;
+    P: string;
+    i: string;
+   }[];
+  };
+
+  if (jsonData.stream !== "!markPrice@arr@1s") return;
 
   const obj: any = {};
 
-  for (let ticker of jsonData) {
-   obj[ticker.s] = +ticker.c;
+  for (let ticker of jsonData.data) {
+   obj[ticker.s] = +ticker.p;
   }
 
   if (appSettings.priceListenerLog) console.log(`Ticker updated at ${moment().format("DD-MM-YYYY HH:mm:ss")}`);
