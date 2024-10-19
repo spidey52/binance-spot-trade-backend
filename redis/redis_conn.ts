@@ -45,7 +45,7 @@ const initializeTickerSocket = () => {
   const obj: any = {};
 
   for (let ticker of jsonData.data) {
-   obj[ticker.s] = +ticker.p;
+   obj[ticker.s] = +(+ticker.p).toFixed(2);
   }
 
   if (appSettings.priceListenerLog) console.log(`Ticker updated at ${moment().format("DD-MM-YYYY HH:mm:ss")}`);
